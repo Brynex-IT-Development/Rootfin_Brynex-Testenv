@@ -135,6 +135,7 @@ const CATEGORY_LABEL_MAP = {
   "rent expenses - warehouse":          "Rent Expenses - Warehouse",
   "equipment rent":                     "Equipment Rent",
   "asset purchase":                     "Asset Purchase",
+  "compensation":                       "Compensation",
   "incentive":                          "Incentive",
   "spot incentive":                     "Incentive",
   "other expenses":                     "Refund",

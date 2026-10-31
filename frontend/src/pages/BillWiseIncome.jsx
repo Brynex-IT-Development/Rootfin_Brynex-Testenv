@@ -539,7 +539,7 @@ const DayBookInc = () => {
             "spot incentive", "bulk amount transfer", "other expenses", "shoe sales return",
             "shirt sales return", "dry cleaning", "altration", "material", "travel exp", "fuel exp",
             "waste management", "water charges", "printing stationary", "staff welfare",
-            "staff accommodation", "incentive", "write off",
+            "staff accommodation", "incentive", "write off", "compensation",
         ]);
         const incomeCategoryValues = new Set([
             "shoe sales", "shirt sales", "mixed sales", "compensation", "advance", "balance payable",

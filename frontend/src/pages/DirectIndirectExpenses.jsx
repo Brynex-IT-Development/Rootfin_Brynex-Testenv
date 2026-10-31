@@ -249,6 +249,7 @@ const INDIRECT_EXPENSE_CATS = [
   { value: "Staff Accommodation", label: "Staff Accommodation" },
   { value: "Rent", label: "Rent" },
   { value: "Asset Purchase", label: "Asset Purchase" },
+  { value: "Compensation", label: "Compensation" },
   { value: "Refund", label: "Refund" },
   { value: "Office Supplies", label: "Office Supplies" },
   { value: "Bank Fees and Charges", label: "Bank Fees and Charges" },

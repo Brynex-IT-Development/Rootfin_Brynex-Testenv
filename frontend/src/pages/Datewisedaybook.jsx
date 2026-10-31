@@ -201,6 +201,7 @@ const CATEGORY_LABEL_MAP = {
   "asset purchase": "Asset Purchase",
   "incentive": "Incentive",
   "spot incentive": "Incentive",
+  "compensation": "Compensation",
   "other expenses": "Refund",
   "bulk amount transfer": "Cash to Bank",
   "write off": "Write Off",

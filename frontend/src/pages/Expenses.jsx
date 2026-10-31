@@ -27,6 +27,7 @@ const baseExpenseCats = [
   { value: "rent",                  label: "Store Rent" },
   { value: "asset purchase",        label: "Asset Purchase",               subs: ["Steamer", "Chairs", "Electronic Items", "Any other Furniture items"] },
   { value: "spot incentive",        label: "Incentive",                    subs: ["Spot incentive", "Weekly incentive"] },
+  { value: "compensation",          label: "Compensation" },
   { value: "other expenses",        label: "Refund",                       subs: ["Security Refund", "Cancellation Refund", "Compensation"] },
   { value: "bulk amount transfer",  label: "Cash to Bank" },
 ];
