@@ -406,6 +406,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [uploadErrors, setUploadErrors] = useState([]);
+  const [uploadNotice, setUploadNotice] = useState("");
 
   // Submission States
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -453,6 +454,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const handleFiles = async (files) => {
     setUploading(true);
     setUploadErrors([]);
+    setUploadNotice("");
 
     try {
       const remainingSlots = IMAGE_CONFIG.MAX_FILES - images.length;
@@ -471,6 +473,16 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
 
       if (processedImages.length > 0) {
         setImages((prev) => [...prev, ...processedImages]);
+
+        const compressedImages = processedImages.filter((image) => image.compressed);
+        if (compressedImages.length > 0) {
+          const originalBytes = compressedImages.reduce((sum, image) => sum + image.originalSize, 0);
+          const compressedBytes = compressedImages.reduce((sum, image) => sum + image.size, 0);
+          const formatMb = (bytes) => `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+          setUploadNotice(
+            `${compressedImages.length} image${compressedImages.length === 1 ? " was" : "s were"} compressed from ${formatMb(originalBytes)} to ${formatMb(compressedBytes)}.`,
+          );
+        }
       }
     } catch (error) {
       setUploadErrors(["Error processing images. Please try again."]);
@@ -482,6 +494,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
 
   const handleRemoveImage = (index) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
+    setUploadNotice("");
   };
 
   const handleSubmit = async (e) => {
@@ -533,7 +546,6 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
       paymentMethod: splitPayment ? "split" : paymentMethod,
       date: new Date().toISOString().split("T")[0],
       attachment: images[0]?.base64 || null,
-      attachments: images.map(img => img.base64),
     };
 
     try {
@@ -572,6 +584,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
     setUpiAmount("");
     setImages([]);
     setUploadErrors([]);
+    setUploadNotice("");
     navigate("/record-expense");
   };
 
@@ -823,7 +836,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
                   Drag image(s) here or browse images
                 </p>
                 <p className="mt-1 text-xs text-gray-400 max-w-xs leading-relaxed">
-                  Up to 15 images (max 5MB each, max 7000×7000px)
+                  Up to 15 images. Large images up to 30MB are compressed automatically.
                 </p>
 
                 <button
@@ -832,14 +845,14 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
                   disabled={uploading}
                   className="mt-4 rounded-xl bg-[#1E232A] hover:bg-black text-white px-6 py-2.5 text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  {uploading ? "Uploading..." : "Upload Images"}
+                  {uploading ? "Compressing..." : "Upload Images"}
                 </button>
 
                 <input
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  accept="image/*,.heic,.heif"
                   onChange={handleFileInput}
                   style={{ display: "none" }}
                 />
@@ -854,6 +867,12 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
                     </p>
                   ))}
                 </div>
+              )}
+
+              {uploadNotice && (
+                <p className="mt-2 text-xs text-emerald-700 font-medium" role="status">
+                  {uploadNotice}
+                </p>
               )}
 
               {/* Uploaded Images Thumbnails */}
@@ -873,6 +892,11 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
                           alt={img.name || `Upload ${idx + 1}`}
                           className="w-full h-full object-cover"
                         />
+                        {img.compressed && (
+                          <span className="absolute bottom-1 left-1 rounded bg-emerald-600/90 px-1.5 py-0.5 text-[9px] font-semibold text-white">
+                            Compressed
+                          </span>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(idx)}
