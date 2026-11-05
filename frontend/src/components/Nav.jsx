@@ -250,6 +250,9 @@ const Nav = () => {
         if (activePath.startsWith("/purchase")) {
             return "purchase";
         }
+        if (activePath.startsWith("/ledgers")) {
+            return "ledgers";
+        }
         if (activePath.startsWith("/manage-users")) {
             return "manageUsers";
         }
@@ -266,6 +269,11 @@ const Nav = () => {
     const isInventoryOpen = openSection === "inventory";
     const isSalesOpen = openSection === "sales";
     const isPurchaseOpen = openSection === "purchase";
+    const isLedgersOpen = openSection === "ledgers";
+    const ledgerLinks = [
+        { to: "/ledgers/rent", label: "Rent Ledgers" },
+    ];
+    const isLedgersActive = activePath.startsWith("/ledgers");
     const isManageUsersOpen = openSection === "manageUsers";
 
     const inventoryLinks = [
@@ -331,7 +339,7 @@ const Nav = () => {
     };
 
     const subLinkClasses = (path) =>
-        `block w-full pl-6 pr-4 py-2.5 text-[13px] whitespace-nowrap truncate transition-colors ${activePath === path
+        `block w-full pl-6 pr-4 py-2.5 text-[13px] whitespace-nowrap truncate transition-colors ${(activePath === path || (path === "/ledgers/rent" && activePath.startsWith("/ledgers/rent")))
             ? "bg-[#a855f7] text-white font-semibold"
             : "text-zinc-400 font-medium hover:text-white hover:bg-[#27272a]/40"
         }`;
@@ -504,6 +512,24 @@ const Nav = () => {
                                     )}
                                 </div>
 
+                                {/* Ledgers */}
+                                <div>
+                                    <button onClick={() => setOpenSection(isLedgersOpen ? null : "ledgers")} className={groupButtonClasses(isLedgersOpen, isLedgersActive)}>
+                                        <div className="flex w-full items-center gap-3.5">
+                                            <Notebook size={18} className="shrink-0" />
+                                            <span className="flex-1 text-left whitespace-nowrap truncate">Ledgers</span>
+                                            <ChevronDown size={16} className={`shrink-0 transition-transform ${isLedgersOpen ? "rotate-180 text-white" : "rotate-0 text-zinc-400"}`} />
+                                        </div>
+                                    </button>
+                                    {isLedgersOpen && (
+                                        <div className="mt-1 space-y-0.5 border-l border-[#27272a] ml-[25px]">
+                                            {ledgerLinks.map(({ to, label }) => (
+                                                <Link key={to} to={to} className={subLinkClasses(to)}><span>{label}</span></Link>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Income & Expenses */}
                                 <Link to="/income" className={singleLinkClasses("/income")}><DollarSign size={18} className="shrink-0" /><span>Income</span></Link>
                                 <Link to="/expenses" className={singleLinkClasses("/expenses")}><DollarSign size={18} className="shrink-0" /><span>Expenses</span></Link>
@@ -589,6 +615,24 @@ const Nav = () => {
                                         )}
                                     </div>
                                 )}
+
+                                {/* Ledgers */}
+                                <div>
+                                    <button onClick={() => setOpenSection(isLedgersOpen ? null : "ledgers")} className={groupButtonClasses(isLedgersOpen, isLedgersActive)}>
+                                        <div className="flex w-full items-center gap-3.5">
+                                            <Notebook size={18} className="shrink-0" />
+                                            <span className="flex-1 text-left whitespace-nowrap truncate">Ledgers</span>
+                                            <ChevronDown size={16} className={`shrink-0 transition-transform ${isLedgersOpen ? "rotate-180 text-white" : "rotate-0 text-zinc-400"}`} />
+                                        </div>
+                                    </button>
+                                    {isLedgersOpen && (
+                                        <div className="mt-1 space-y-0.5 border-l border-[#27272a] ml-[25px]">
+                                            {ledgerLinks.map(({ to, label }) => (
+                                                <Link key={to} to={to} className={subLinkClasses(to)}><span>{label}</span></Link>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
 
                                 {/* Reports */}
                                 <div>

@@ -7,6 +7,7 @@ import Transaction from '../model/Transaction.js';
 import CloseTransaction from '../model/Closing.js';
 import { propagateCashDiff } from '../utils/cashPropagation.js';
 import {DownloadAttachment} from "../controllers/TransactionController.js";
+import { createRentLedger, getRentLedgers, deleteRentLedger } from "../controllers/RentLedgerController.js";
 
 
 
@@ -402,6 +403,11 @@ router.get("/transaction/:id/attachment", DownloadAttachment);
  *         description: Server error
  */
 router.get('/financialSummaryWithEdit', getFinancialSummaryWithEdit);
+
+// Rent Ledger routes
+router.post('/rent-ledgers', createRentLedger);
+router.get('/rent-ledgers', getRentLedgers);
+router.delete('/rent-ledgers/:id', deleteRentLedger);
 
 
 
