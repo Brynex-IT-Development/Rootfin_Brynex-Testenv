@@ -657,11 +657,19 @@ export default function IncomeExpenseReport() {
   };
   const grandTotalExpense = expTotal + holdedSecTotal + cashToBankTotal;
 
-  const netCash   = incTotals.cash + expTotals.cash;
-  const netRbl    = incTotals.rbl  + expTotals.rbl;
-  const netBank   = incTotals.bank + expTotals.bank;
-  const netUpi    = incTotals.upi  + expTotals.upi;
-  const netTotal  = incTotal + expTotal;
+  // 1. Top Card: Net Difference between Income TOTAL (incTotals) and Expense TOTAL (expTotals)
+  const topNetCash   = incTotals.cash + expTotals.cash;
+  const topNetRbl    = incTotals.rbl  + expTotals.rbl;
+  const topNetBank   = incTotals.bank + expTotals.bank;
+  const topNetUpi    = incTotals.upi  + expTotals.upi;
+  const topNetTotal  = incTotal + expTotal;
+
+  // 2. Table Footer: Net Difference Total between TOTAL INCOME (grandTotalIncome) and TOTAL EXPENSES (grandTotalExpense)
+  const tableNetCash  = grandTotalIncomeTotals.cash + grandTotalExpenseTotals.cash;
+  const tableNetRbl   = grandTotalIncomeTotals.rbl  + grandTotalExpenseTotals.rbl;
+  const tableNetBank  = grandTotalIncomeTotals.bank + grandTotalExpenseTotals.bank;
+  const tableNetUpi   = grandTotalIncomeTotals.upi  + grandTotalExpenseTotals.upi;
+  const tableNetTotal = grandTotalIncome + grandTotalExpense;
 
   const allCategories = useMemo(() => {
     const fromRows = [...new Set([
@@ -1304,27 +1312,27 @@ export default function IncomeExpenseReport() {
                     <ArrowUpDown size={20} />
                   </div>
                 </div>
-                <h3 className={`text-[32px] leading-none font-bold mb-5 ${netTotal >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                  {netTotal >= 0 ? fmt(netTotal) : `-${fmt(Math.abs(netTotal))}`}
+                <h3 className={`text-[32px] leading-none font-bold mb-5 ${topNetTotal >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                  {topNetTotal >= 0 ? fmt(topNetTotal) : `-${fmt(Math.abs(topNetTotal))}`}
                 </h3>
               </div>
               <div className="border-t border-gray-100 pt-3">
                 <div className="space-y-2">
                   <div className="flex justify-between text-[13px] text-gray-500">
                     <span>Cash :</span>
-                    <strong className="text-gray-800">{fmt(netCash)}</strong>
+                    <strong className="text-gray-800">{fmt(topNetCash)}</strong>
                   </div>
                   <div className="flex justify-between text-[13px] text-gray-500">
                     <span>Razorpay :</span>
-                    <strong className="text-gray-800">{fmt(netRbl)}</strong>
+                    <strong className="text-gray-800">{fmt(topNetRbl)}</strong>
                   </div>
                   <div className="flex justify-between text-[13px] text-gray-500">
                     <span>Card/Bank :</span>
-                    <strong className="text-gray-800">{fmt(netBank)}</strong>
+                    <strong className="text-gray-800">{fmt(topNetBank)}</strong>
                   </div>
                   <div className="flex justify-between text-[13px] text-gray-500">
                     <span>UPI :</span>
-                    <strong className="text-gray-800">{fmt(netUpi)}</strong>
+                    <strong className="text-gray-800">{fmt(topNetUpi)}</strong>
                   </div>
                 </div>
               </div>
@@ -1532,12 +1540,12 @@ export default function IncomeExpenseReport() {
                       <td colSpan={showBranch ? 5 : 4} className="px-4 py-3.5 text-right text-sm font-black text-blue-950 uppercase tracking-wider">
                         Net Difference Total:
                       </td>
-                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{netRbl  !== 0 ? fmt(netRbl)  : "-"}</td>
-                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{netCash !== 0 ? fmt(netCash) : "-"}</td>
-                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{netBank !== 0 ? fmt(netBank) : "-"}</td>
-                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{netUpi  !== 0 ? fmt(netUpi)  : "-"}</td>
-                      <td className={`px-4 py-3.5 text-right text-base font-black font-mono ${netTotal >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
-                        {netTotal >= 0 ? fmt(netTotal) : `-${fmt(Math.abs(netTotal))}`}
+                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{tableNetRbl  !== 0 ? fmt(tableNetRbl)  : "-"}</td>
+                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{tableNetCash !== 0 ? fmt(tableNetCash) : "-"}</td>
+                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{tableNetBank !== 0 ? fmt(tableNetBank) : "-"}</td>
+                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{tableNetUpi  !== 0 ? fmt(tableNetUpi)  : "-"}</td>
+                      <td className={`px-4 py-3.5 text-right text-base font-black font-mono ${tableNetTotal >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
+                        {tableNetTotal >= 0 ? fmt(tableNetTotal) : `-${fmt(Math.abs(tableNetTotal))}`}
                       </td>
                       <td className="px-4 py-3.5"></td>
                     </tr>
