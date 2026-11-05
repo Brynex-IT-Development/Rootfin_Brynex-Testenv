@@ -364,6 +364,16 @@ const fallbackLocations = [
   { locName: "WAREHOUSE", locCode: "103" }
 ];
 
+const BANK_ACCOUNTS = [
+  { value: "Hdfc SG **0420",       label: "Hdfc SG **0420" },
+  { value: "Hdfc ZR **9637",       label: "Hdfc ZR **9637" },
+  { value: "Hdfc Statutory **9726",label: "Hdfc Statutory **9726" },
+  { value: "Federal ED **8633",    label: "Federal ED **8633" },
+  { value: "Federal MG **9433",    label: "Federal MG **9433" },
+  { value: "Federal DS **8575",    label: "Federal DS **8575" },
+  { value: "Federal Rootments",    label: "Federal Rootments" },
+];
+
 const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const isSidebarOpen = useSidebar();
   const location = useLocation();
@@ -399,6 +409,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const [cashAmount, setCashAmount] = useState("");
   const [bankAmount, setBankAmount] = useState("");
   const [upiAmount, setUpiAmount] = useState("");
+  const [bankAccount, setBankAccount] = useState("");
   
   // Image Upload States
   const fileInputRef = useRef(null);
@@ -544,6 +555,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
       bank: splitPayment ? `-${bankAmount || "0"}` : paymentMethod === "bank" ? `-${amount}` : "0",
       upi:  splitPayment ? `-${upiAmount  || "0"}` : paymentMethod === "upi"  ? `-${amount}` : "0",
       paymentMethod: splitPayment ? "split" : paymentMethod,
+      bankAccount: (paymentMethod === "bank" || splitPayment) ? bankAccount : "",
       date: new Date().toISOString().split("T")[0],
       attachment: images[0]?.base64 || null,
     };
@@ -582,6 +594,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
     setCashAmount("");
     setBankAmount("");
     setUpiAmount("");
+    setBankAccount("");
     setImages([]);
     setUploadErrors([]);
     setUploadNotice("");
@@ -782,6 +795,23 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
               </label>
             </div>
 
+            {/* Bank Account Dropdown - shown when Bank is selected or in Split Payment */}
+            {(paymentMethod === "bank" || splitPayment) && (
+              <div className="mt-4 max-w-xs">
+                <label className="block text-xs font-semibold text-gray-700 tracking-wide mb-2 uppercase">
+                  Bank Account <span className="text-red-500 font-bold">*</span>
+                </label>
+                <SearchableSelect
+                  value={bankAccount}
+                  onChange={(val) => setBankAccount(val)}
+                  options={BANK_ACCOUNTS}
+                  placeholder="Select Bank Account"
+                  searchPlaceholder="Search bank account..."
+                  icon={BsBank2}
+                />
+              </div>
+            )}
+
             {splitPayment && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 bg-purple-50/20 p-4 rounded-xl border border-purple-100">
                 {[
@@ -792,7 +822,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
                   <div key={lbl}>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase">{lbl} Amount</label>
                     <div className="relative flex items-center rounded-xl border border-gray-200 bg-white px-3 h-11 focus-within:border-[#9B48D7] focus-within:ring-2 focus-within:ring-purple-500/10">
-                      <span className="text-gray-400 text-sm mr-1.5">₹</span>
+                      <span className="text-gray-400 text-sm mr-1.5">Γé╣</span>
                       <input 
                         type="number" 
                         step="any"
