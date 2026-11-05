@@ -657,11 +657,11 @@ export default function IncomeExpenseReport() {
   };
   const grandTotalExpense = expTotal + holdedSecTotal + cashToBankTotal;
 
-  const netCash   = grandTotalIncomeTotals.cash + grandTotalExpenseTotals.cash;
-  const netRbl    = grandTotalIncomeTotals.rbl  + grandTotalExpenseTotals.rbl;
-  const netBank   = grandTotalIncomeTotals.bank + grandTotalExpenseTotals.bank;
-  const netUpi    = grandTotalIncomeTotals.upi  + grandTotalExpenseTotals.upi;
-  const netTotal  = grandTotalIncome + grandTotalExpense;
+  const netCash   = incTotals.cash + expTotals.cash;
+  const netRbl    = incTotals.rbl  + expTotals.rbl;
+  const netBank   = incTotals.bank + expTotals.bank;
+  const netUpi    = incTotals.upi  + expTotals.upi;
+  const netTotal  = incTotal + expTotal;
 
   const allCategories = useMemo(() => {
     const fromRows = [...new Set([
