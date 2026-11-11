@@ -372,6 +372,7 @@ const BANK_ACCOUNTS = [
   { value: "Federal MG **9433",    label: "Federal MG **9433" },
   { value: "Federal DS **8575",    label: "Federal DS **8575" },
   { value: "Federal Rootments",    label: "Federal Rootments" },
+  { value: "IDFC First Bank",      label: "IDFC First Bank"},
 ];
 
 const DirectIndirectExpenses = ({ initialType = "direct" }) => {
