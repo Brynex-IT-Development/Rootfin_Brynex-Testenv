@@ -220,10 +220,10 @@ const ItemDropdown = ({ rowId, value, onChange, warehouse, onStockFetched, userW
           isAdmin
         });
         
-        // Build query params for items - filter by warehouse
+        // Build query params for items - fetch all items (capped at 10000 like SalesInvoice & TransferOrder)
         const itemsParams = new URLSearchParams({
           page: "1",
-          limit: "100"
+          limit: "10000"
         });
         if (targetWarehouse) {
           itemsParams.append("warehouse", targetWarehouse);
@@ -238,10 +238,10 @@ const ItemDropdown = ({ rowId, value, onChange, warehouse, onStockFetched, userW
           itemsList = Array.isArray(itemsData) ? itemsData : (itemsData.items || []);
         }
         
-        // Build query params for item groups - filter by warehouse
+        // Build query params for item groups - fetch all groups
         const groupsParams = new URLSearchParams({
           page: "1",
-          limit: "100"
+          limit: "10000"
         });
         if (targetWarehouse) {
           groupsParams.append("warehouse", targetWarehouse);
@@ -501,10 +501,16 @@ const ItemDropdown = ({ rowId, value, onChange, warehouse, onStockFetched, userW
   const updatePos = () => {
     if (!buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
+    const availableBelow = window.innerHeight - rect.bottom - 16;
+    const availableAbove = rect.top - 16;
+    const openUpwards = availableBelow < 280 && availableAbove > availableBelow;
+    const dynamicMaxHeight = Math.max(220, Math.min(openUpwards ? availableAbove - 60 : availableBelow - 60, 600));
+
     setDropdownPos({
-      top: rect.bottom + 6,
+      top: openUpwards ? Math.max(10, rect.top - dynamicMaxHeight - 60) : rect.bottom + 6,
       left: rect.left,
       width: Math.max(rect.width, 500),
+      maxHeight: dynamicMaxHeight,
     });
   };
 
@@ -549,10 +555,12 @@ const ItemDropdown = ({ rowId, value, onChange, warehouse, onStockFetched, userW
   }, [isOpen]);
 
   const filteredItems = items.filter((item) => {
-    const searchLower = searchTerm.toLowerCase();
+    const searchLower = searchTerm.toLowerCase().trim();
+    if (!searchLower) return true;
     const itemName = (item.itemName || "").toLowerCase();
     const sku = (item.sku || "").toLowerCase();
-    return itemName.includes(searchLower) || sku.includes(searchLower);
+    const groupName = (item.groupName || item.itemGroupName || "").toLowerCase();
+    return itemName.includes(searchLower) || sku.includes(searchLower) || groupName.includes(searchLower);
   });
 
   const handleSelectItem = (item) => {
@@ -634,7 +642,14 @@ const ItemDropdown = ({ rowId, value, onChange, warehouse, onStockFetched, userW
             autoFocus
           />
         </div>
-        <div className="py-2 max-h-[400px] overflow-y-auto">
+        <div 
+          className="py-2 overflow-y-auto"
+          style={{ 
+            maxHeight: dropdownPos.maxHeight ? `${dropdownPos.maxHeight}px` : '500px',
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#cbd5e1 #f8fafc'
+          }}
+        >
           {loading ? (
             <div className="px-4 py-8 text-center text-sm text-[#64748b]">Loading items...</div>
           ) : filteredItems.length === 0 ? (
@@ -663,7 +678,7 @@ const ItemDropdown = ({ rowId, value, onChange, warehouse, onStockFetched, userW
                         {item.itemName || "Unnamed Item"}
                       </div>
                       <div className={`text-xs mt-1 ${isSelected ? "text-white/80" : "text-[#64748b]"}`}>
-                        {item.isFromGroup && `Group: ${item.groupName} • `}
+                        {item.isFromGroup && (item.groupName || item.itemGroupName) && `Group: ${item.groupName || item.itemGroupName} • `}
                         SKU: {item.sku || "N/A"}
                       </div>
                     </div>
