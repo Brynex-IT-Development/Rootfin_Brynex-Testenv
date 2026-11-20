@@ -717,6 +717,15 @@ export const updateInventoryAdjustment = async (req, res) => {
 
     const oldStatus = existingAdjustment.status;
     const newStatus = adjustmentData.status || oldStatus;
+
+    // Only admins may approve a pending request (pending_approval -> adjusted)
+    if (oldStatus === "pending_approval" && newStatus === "adjusted") {
+      const approverPower = String(adjustmentData.userPower || "").toLowerCase();
+      if (approverPower !== "admin" && approverPower !== "super_admin") {
+        return res.status(403).json({ message: "Only an admin can approve inventory adjustments" });
+      }
+    }
+
     const oldItems = existingAdjustment.items || [];
     const newItems = adjustmentData.items || oldItems;
     const warehouse = adjustmentData.warehouse || existingAdjustment.warehouse;
