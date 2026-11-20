@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Search, X, Plus, Trash2, AlertTriangle } from "lucide-react";
 import Header from "../components/Header";
 import baseUrl from "../api/api";
@@ -16,7 +16,7 @@ const InventoryAdjustments = () => {
   const userStr = localStorage.getItem("rootfinuser");
   const user = userStr ? JSON.parse(userStr) : null;
   const userId = user?.email || user?._id || user?.id || "";
-  const isAdmin = user?.power === "admin";
+  const isAdmin = user?.power === "admin" || user?.role === "superadmin";
   
   // Fallback locations mapping
   const fallbackLocations = [
@@ -62,9 +62,10 @@ const InventoryAdjustments = () => {
   const [adjustments, setAdjustments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState({
     type: "All",
-    status: "All",
+    status: searchParams.get("status") === "pending_approval" ? "Pending Approval" : "All",
     period: "All",
   });
   const [selectedAdjustments, setSelectedAdjustments] = useState(new Set());
@@ -72,6 +73,33 @@ const InventoryAdjustments = () => {
   const [deleteStep, setDeleteStep] = useState(1); // 1 = first confirmation, 2 = second confirmation
   const [deleting, setDeleting] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState([]);
+  const [approvingId, setApprovingId] = useState(null);
+
+  // Admin approval from the list: pending_approval -> adjusted (backend applies the stock change)
+  const handleApproveRow = async (adjustment) => {
+    const adjustmentId = adjustment.id || adjustment._id;
+    if (!adjustmentId) return;
+    if (!window.confirm(`Approve ${adjustment.referenceNumber || "this adjustment"}? Stock will be updated.`)) return;
+    setApprovingId(adjustmentId);
+    try {
+      const response = await fetch(`${API_URL}/api/inventory/adjustments/${adjustmentId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "adjusted",
+          userId: userId,
+          userPower: user?.power || (user?.role === "superadmin" ? "admin" : ""),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to approve adjustment");
+      setAdjustments((prev) => prev.map((a) => ((a.id || a._id) === adjustmentId ? { ...a, ...data, id: adjustmentId } : a)));
+    } catch (error) {
+      alert(`Error approving adjustment: ${error.message}`);
+    } finally {
+      setApprovingId(null);
+    }
+  };
   
   // Helper function to map locName to warehouse name
   // Use the shared warehouse mapping utility
@@ -125,10 +153,10 @@ const InventoryAdjustments = () => {
         const params = new URLSearchParams();
         if (userId) params.append("userId", userId);
         if (filters.type !== "All") params.append("adjustmentType", filters.type.toLowerCase());
-        if (filters.status !== "All") params.append("status", filters.status.toLowerCase());
-        
-        // For non-admin users AND admins viewing specific store, filter by warehouse in the backend
-        if (userWarehouse) {
+        if (filters.status !== "All") params.append("status", filters.status.toLowerCase().replace(/ /g, "_"));
+
+        // Non-admins are limited to their own warehouse. Admins see all requests unless they pick a store.
+        if (userWarehouse && !isAdmin) {
           params.append("warehouse", userWarehouse);
           console.log(`🔍 Inventory Adjustments: Filtering by warehouse: "${userWarehouse}"`);
         }
@@ -341,8 +369,8 @@ const InventoryAdjustments = () => {
       const params = new URLSearchParams();
       if (userId) params.append("userId", userId);
       if (filters.type !== "All") params.append("adjustmentType", filters.type.toLowerCase());
-      if (filters.status !== "All") params.append("status", filters.status.toLowerCase());
-      
+      if (filters.status !== "All") params.append("status", filters.status.toLowerCase().replace(/ /g, "_"));
+
       if (!isAdmin && userWarehouse) {
         params.append("warehouse", userWarehouse);
       }
@@ -637,6 +665,20 @@ const InventoryAdjustments = () => {
                             }`}>
                               {adjustment.status === "adjusted" ? "ADJUSTED" : adjustment.status === "pending_approval" ? "PENDING APPROVAL" : "DRAFT"}
                             </span>
+                            {isAdmin && adjustment.status === "pending_approval" && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleApproveRow(adjustment);
+                                }}
+                                disabled={approvingId === adjustmentId}
+                                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", flexDirection: "row", gap: "4px", height: "28px", padding: "0 10px", marginLeft: "8px", whiteSpace: "nowrap", lineHeight: "1" }}
+                                className="rounded-none bg-[#16a34a] hover:bg-[#15803d] text-[11px] font-bold uppercase tracking-wide text-white transition-colors disabled:opacity-50"
+                              >
+                                {approvingId === adjustmentId ? "Approving..." : "Approve"}
+                              </button>
+                            )}
                           </td>
                           <td className="px-3 py-2.5 text-[#4B5563] border-r border-[#E5E7EB]">
                             {adjustment.warehouse || "-"}

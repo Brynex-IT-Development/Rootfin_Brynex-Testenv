@@ -71,6 +71,7 @@ const Header = (prop) => {
     
     const [pendingClosuresCount, setPendingClosuresCount] = useState(0);
     const [pendingAdjustmentsCount, setPendingAdjustmentsCount] = useState(0);
+    const [pendingAdjustments, setPendingAdjustments] = useState([]);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const notificationRef = useRef(null);
 
@@ -233,11 +234,12 @@ const Header = (prop) => {
                 }
 
                 try {
-                    const adjRes = await fetch(`${API_URL}/api/inventory/adjustments?status=pending_approval`);
+                    const adjRes = await fetch(`${API_URL}/api/inventory/adjustments?status=pending_approval&userPower=${encodeURIComponent(user?.power || (user?.role === 'superadmin' ? 'admin' : ''))}`);
                     if (adjRes.ok) {
                         const adjData = await adjRes.json();
-                        const count = Array.isArray(adjData) ? adjData.length : (adjData.data?.length || 0);
-                        setPendingAdjustmentsCount(count);
+                        const list = Array.isArray(adjData) ? adjData : (adjData.data || []);
+                        setPendingAdjustments(list);
+                        setPendingAdjustmentsCount(list.length);
                     }
                 } catch (e) {
                     console.error("Error fetching pending adjustments", e);
@@ -403,21 +405,24 @@ const Header = (prop) => {
                                             </Link>
                                         ) : null}
                                         
-                                        {pendingAdjustmentsCount > 0 ? (
-                                            <Link 
-                                                to="/inventory/adjustments" 
-                                                onClick={() => setIsNotificationOpen(false)}
-                                                className="block px-4 py-3 hover:bg-purple-50 transition-colors"
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <p className="text-sm font-medium text-gray-800">Inventory Adjustments</p>
-                                                        <p className="text-xs text-gray-500 mt-0.5">Require super admin approval</p>
-                                                    </div>
-                                                    <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">{pendingAdjustmentsCount}</span>
-                                                </div>
-                                            </Link>
-                                        ) : null}
+                                        {pendingAdjustments.map((adj) => {
+                                            const adjId = adj.id || adj._id;
+                                            return (
+                                                <Link
+                                                    key={adjId}
+                                                    to={`/inventory/adjustments/${adjId}`}
+                                                    onClick={() => setIsNotificationOpen(false)}
+                                                    className="block px-4 py-3 hover:bg-purple-50 transition-colors"
+                                                >
+                                                    <p className="text-sm font-medium text-gray-800">
+                                                        {adj.referenceNumber || 'Inventory Adjustment'} · {adj.warehouse || '-'}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">
+                                                        Pending approval{adj.reason ? ` · ${adj.reason}` : ''}
+                                                    </p>
+                                                </Link>
+                                            );
+                                        })}
 
                                         {pendingClosuresCount === 0 && pendingAdjustmentsCount === 0 && (
                                             <div className="px-4 py-6 text-center text-sm text-gray-500">

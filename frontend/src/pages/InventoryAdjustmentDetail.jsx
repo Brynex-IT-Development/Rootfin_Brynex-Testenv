@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Edit, Printer, ChevronDown, MoreVertical } from "lucide-react";
+import { ArrowLeft, Edit, Printer, ChevronDown, MoreVertical, CheckCircle } from "lucide-react";
 import baseUrl from "../api/api";
 import useSidebar from "../hooks/useSidebar";
 
@@ -52,8 +52,80 @@ const InventoryAdjustmentDetail = () => {
     }
   }, [id, API_URL, navigate]);
   
+  // Print the document through a hidden iframe: no new tab, and the app's global print CSS cannot hide it
   const handlePrint = () => {
-    window.print();
+    const doc = document.getElementById("printable-invoice");
+    if (!doc) {
+      window.print();
+      return;
+    }
+    const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .map((node) => node.outerHTML)
+      .join("");
+
+    const frame = document.createElement("iframe");
+    frame.setAttribute("aria-hidden", "true");
+    frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;";
+    document.body.appendChild(frame);
+
+    const frameDoc = frame.contentWindow.document;
+    frameDoc.open();
+    frameDoc.write(`<!doctype html><html><head><meta charset="utf-8" />
+      <title>${adjustment?.referenceNumber || "Inventory Adjustment"}</title>${styles}
+      <style>@page { margin: 12mm; } body { margin: 0; background: #fff; }</style>
+      </head><body>${doc.outerHTML}</body></html>`);
+    frameDoc.close();
+
+    setTimeout(() => {
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+      setTimeout(() => frame.remove(), 1000);
+    }, 400);
+  };
+
+  // Approval: only admins can approve a pending request (applies the stock change)
+  const storedUser = (() => {
+    try { return JSON.parse(localStorage.getItem("rootfinuser") || "null"); } catch { return null; }
+  })();
+  const canApprove = storedUser?.power === "admin" || storedUser?.role === "superadmin";
+  const [approving, setApproving] = useState(false);
+
+  // Global button styles in index.css override Tailwind's flex utilities, so layout is set inline
+  const barButtonStyle = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    height: "36px",
+    padding: "0 14px",
+    fontSize: "14px",
+    lineHeight: "1",
+    whiteSpace: "nowrap",
+    flexDirection: "row",
+    cursor: "pointer",
+  };
+
+  const handleApprove = async () => {
+    if (!window.confirm("Approve this adjustment? Stock will be updated.")) return;
+    setApproving(true);
+    try {
+      const response = await fetch(`${API_URL}/api/inventory/adjustments/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "adjusted",
+          userId: storedUser?.email || storedUser?._id || storedUser?.id || "",
+          userPower: storedUser?.power || "",
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to approve adjustment");
+      setAdjustment(data);
+    } catch (error) {
+      alert(`Error approving adjustment: ${error.message}`);
+    } finally {
+      setApproving(false);
+    }
   };
 
   // Company information
@@ -111,25 +183,46 @@ const InventoryAdjustmentDetail = () => {
   
   return (
     <div className={`transition-all duration-300 min-h-screen bg-[#f5f7fb] p-3 sm:p-6 ${isSidebarOpen ? 'lg:ml-64 ml-0' : 'ml-0'}`}>
+      {/* Print: show only the adjustment document, at the top of a clean page */}
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          #printable-invoice, #printable-invoice * { visibility: visible !important; }
+          #printable-invoice { position: absolute !important; left: 0; top: 0; width: 100% !important; max-width: 100% !important; margin: 0 !important; box-shadow: none !important; border: none !important; }
+        }
+      `}</style>
       {/* Top Bar with Actions */}
       <div className="mb-4 flex items-center justify-between bg-white rounded-lg border border-[#e2e8f0] px-4 py-3 shadow-sm">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Link
             to="/inventory/adjustments"
-            className="inline-flex items-center gap-2 rounded-md border border-[#d4dcf4] bg-white px-3 py-1.5 text-sm font-medium text-[#111827] hover:bg-[#f3f4f6]"
+            aria-label="Back to inventory adjustments"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[#d4dcf4] bg-white text-[#111827] hover:bg-[#f3f4f6]"
           >
             <ArrowLeft size={16} />
           </Link>
           <Link
             to={`/inventory/adjustments/${id}/edit`}
-            className="inline-flex items-center gap-2 rounded-md border border-[#d4dcf4] bg-white px-3 py-1.5 text-sm font-medium text-[#111827] hover:bg-[#f3f4f6]"
+            className="inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-md border border-[#d4dcf4] bg-white px-3.5 text-sm font-medium text-[#111827] hover:bg-[#f3f4f6]"
           >
             <Edit size={16} />
             Edit
           </Link>
+          {canApprove && adjustment.status === "pending_approval" && (
+            <button
+              onClick={handleApprove}
+              disabled={approving}
+              style={barButtonStyle}
+              className="rounded-md bg-[#16a34a] text-white font-semibold hover:bg-[#15803d] disabled:opacity-50"
+            >
+              <CheckCircle size={16} />
+              {approving ? "Approving..." : "Approve"}
+            </button>
+          )}
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-2 rounded-md border border-[#d4dcf4] bg-white px-3 py-1.5 text-sm font-medium text-[#111827] hover:bg-[#f3f4f6]"
+            style={barButtonStyle}
+            className="rounded-md border border-[#d4dcf4] bg-white text-[#111827] font-medium hover:bg-[#f3f4f6]"
           >
             <Printer size={16} />
             PDF/Print
@@ -154,7 +247,7 @@ const InventoryAdjustmentDetail = () => {
       
       {/* Document View */}
       {showPdfView && (
-        <div className="bg-white rounded-lg shadow-lg border border-[#e2e8f0] overflow-hidden print:shadow-none print:border-0" style={{ maxWidth: '210mm', margin: '0 auto', position: 'relative' }}>
+        <div id="printable-invoice" className="bg-white rounded-lg shadow-lg border border-[#e2e8f0] overflow-hidden print:shadow-none print:border-0" style={{ maxWidth: '210mm', margin: '0 auto', position: 'relative' }}>
           {/* Status Banner - Diagonal Overlay (Top Left) */}
           {adjustment.status === "adjusted" && (
             <div 
@@ -173,7 +266,13 @@ const InventoryAdjustmentDetail = () => {
           
           <div className="p-10 print:p-8" style={{ paddingTop: adjustment.status === "adjusted" ? '60px' : '20px' }}>
             {/* Header with Company Info and Document Title */}
-            <div className="mb-8 flex justify-between items-start">
+            <div className="mb-8">
+              {/* Document Title (Centered, full width) */}
+              <h1 className="text-center text-2xl font-bold tracking-wide text-[#111827] pb-4 mb-5 border-b border-[#e5e7eb]">
+                INVENTORY ADJUSTMENT
+              </h1>
+
+              <div className="grid grid-cols-2 gap-6 items-start">
               {/* Company Information (Left) */}
               <div className="text-sm text-[#111827] space-y-1">
                 <div>
@@ -186,11 +285,6 @@ const InventoryAdjustmentDetail = () => {
                 </div>
                 <div className="mt-2">{companyCountry}</div>
                 <div>GSTIN {companyGSTIN}</div>
-              </div>
-
-              {/* Document Title (Center) */}
-              <div className="flex-1 text-center">
-                <h1 className="text-3xl font-bold text-[#111827]">INVENTORY ADJUSTMENT</h1>
               </div>
 
               {/* Adjustment Details (Right) */}
@@ -215,6 +309,7 @@ const InventoryAdjustmentDetail = () => {
                   <span className="font-semibold">Adjustment Type: </span>
                   <span>{adjustmentType}</span>
                 </div>
+              </div>
               </div>
             </div>
 
