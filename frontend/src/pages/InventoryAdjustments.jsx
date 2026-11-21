@@ -17,7 +17,8 @@ const InventoryAdjustments = () => {
   const user = userStr ? JSON.parse(userStr) : null;
   const userId = user?.email || user?._id || user?.id || "";
   const isAdmin = user?.power === "admin" || user?.role === "superadmin";
-  
+  const isSuperAdmin = user?.role === "superadmin";
+
   // Fallback locations mapping
   const fallbackLocations = [
     { "locName": "Z-Edapally1", "locCode": "144" },
@@ -89,6 +90,7 @@ const InventoryAdjustments = () => {
           status: "adjusted",
           userId: userId,
           userPower: user?.power || (user?.role === "superadmin" ? "admin" : ""),
+          userRole: user?.role || "",
         }),
       });
       const data = await response.json();
@@ -665,7 +667,7 @@ const InventoryAdjustments = () => {
                             }`}>
                               {adjustment.status === "adjusted" ? "ADJUSTED" : adjustment.status === "pending_approval" ? "PENDING APPROVAL" : "DRAFT"}
                             </span>
-                            {isAdmin && adjustment.status === "pending_approval" && (
+                            {isSuperAdmin && adjustment.status === "pending_approval" && (
                               <button
                                 type="button"
                                 onClick={(e) => {

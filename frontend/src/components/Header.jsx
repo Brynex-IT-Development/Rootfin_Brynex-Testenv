@@ -234,6 +234,7 @@ const Header = (prop) => {
                 }
 
                 try {
+                    if (user?.role !== 'superadmin') throw new Error('Pending adjustment approvals are for super admins only');
                     const adjRes = await fetch(`${API_URL}/api/inventory/adjustments?status=pending_approval&userPower=${encodeURIComponent(user?.power || (user?.role === 'superadmin' ? 'admin' : ''))}`);
                     if (adjRes.ok) {
                         const adjData = await adjRes.json();

@@ -83,11 +83,11 @@ const InventoryAdjustmentDetail = () => {
     }, 400);
   };
 
-  // Approval: only admins can approve a pending request (applies the stock change)
+  // Approval: only super admins can approve a pending request (applies the stock change)
   const storedUser = (() => {
     try { return JSON.parse(localStorage.getItem("rootfinuser") || "null"); } catch { return null; }
   })();
-  const canApprove = storedUser?.power === "admin" || storedUser?.role === "superadmin";
+  const canApprove = storedUser?.role === "superadmin";
   const [approving, setApproving] = useState(false);
 
   // Global button styles in index.css override Tailwind's flex utilities, so layout is set inline
@@ -116,6 +116,7 @@ const InventoryAdjustmentDetail = () => {
           status: "adjusted",
           userId: storedUser?.email || storedUser?._id || storedUser?.id || "",
           userPower: storedUser?.power || "",
+          userRole: storedUser?.role || "",
         }),
       });
       const data = await response.json();
