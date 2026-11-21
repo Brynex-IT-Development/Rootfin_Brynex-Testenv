@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Edit, Printer, ChevronDown, MoreVertical, CheckCircle } from "lucide-react";
 import baseUrl from "../api/api";
@@ -89,6 +89,7 @@ const InventoryAdjustmentDetail = () => {
   })();
   const canApprove = storedUser?.role === "superadmin";
   const [approving, setApproving] = useState(false);
+  const approvalInFlight = useRef(false); // blocks a second approval while one is still being applied
 
   // Global button styles in index.css override Tailwind's flex utilities, so layout is set inline
   const barButtonStyle = {
@@ -106,7 +107,9 @@ const InventoryAdjustmentDetail = () => {
   };
 
   const handleApprove = async () => {
+    if (approvalInFlight.current) return;
     if (!window.confirm("Approve this adjustment? Stock will be updated.")) return;
+    approvalInFlight.current = true;
     setApproving(true);
     try {
       const response = await fetch(`${API_URL}/api/inventory/adjustments/${id}`, {
@@ -125,6 +128,7 @@ const InventoryAdjustmentDetail = () => {
     } catch (error) {
       alert(`Error approving adjustment: ${error.message}`);
     } finally {
+      approvalInFlight.current = false;
       setApproving(false);
     }
   };
@@ -322,6 +326,7 @@ const InventoryAdjustmentDetail = () => {
                     <th className="border border-[#d1d5db] px-4 py-3 text-left text-xs font-semibold text-white">#</th>
                     <th className="border border-[#d1d5db] px-4 py-3 text-left text-xs font-semibold text-white">SKU</th>
                     <th className="border border-[#d1d5db] px-4 py-3 text-left text-xs font-semibold text-white">Item & Description</th>
+                    <th className="border border-[#d1d5db] px-4 py-3 text-right text-xs font-semibold text-white">Old Stock</th>
                     <th className="border border-[#d1d5db] px-4 py-3 text-right text-xs font-semibold text-white">Quantity Adjusted</th>
                     <th className="border border-[#d1d5db] px-4 py-3 text-right text-xs font-semibold text-white">Newly Adjusted Stock</th>
                   </tr>
@@ -338,16 +343,19 @@ const InventoryAdjustmentDetail = () => {
                           {item.itemName || "-"}
                         </td>
                         <td className="border border-[#d1d5db] px-4 py-3 text-sm text-right text-[#111827] font-medium">
+                          {parseFloat(item.currentQuantity || 0).toFixed(2)} PCS
+                        </td>
+                        <td className="border border-[#d1d5db] px-4 py-3 text-sm text-right text-[#111827] font-medium">
                           {parseFloat(item.quantityAdjusted || 0).toFixed(2)} PCS
                         </td>
                         <td className="border border-[#d1d5db] px-4 py-3 text-sm text-right text-[#111827] font-medium">
-                          {parseFloat(item.newQuantity || item.currentQuantity || 0).toFixed(2)} PCS
+                          {parseFloat(item.newQuantity ?? item.currentQuantity ?? 0).toFixed(2)} PCS
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="border border-[#d1d5db] px-4 py-8 text-center text-sm text-[#6b7280]">
+                      <td colSpan="6" className="border border-[#d1d5db] px-4 py-8 text-center text-sm text-[#6b7280]">
                         No items found
                       </td>
                     </tr>
@@ -422,6 +430,7 @@ const InventoryAdjustmentDetail = () => {
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-[#64748b]">SKU</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-[#64748b]">Item</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-[#64748b]">Old Stock</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-[#64748b]">Quantity Adjusted</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-[#64748b]">Newly Adjusted Stock</th>
                   </tr>
@@ -433,16 +442,19 @@ const InventoryAdjustmentDetail = () => {
                         <td className="px-4 py-3 text-sm font-medium text-[#1e293b]">{item.itemSku || "-"}</td>
                         <td className="px-4 py-3 text-sm text-[#1e293b]">{item.itemName || "-"}</td>
                         <td className="px-4 py-3 text-sm text-right text-[#1e293b]">
+                          {parseFloat(item.currentQuantity || 0).toFixed(2)} PCS
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right text-[#1e293b]">
                           {parseFloat(item.quantityAdjusted || 0).toFixed(2)} PCS
                         </td>
                         <td className="px-4 py-3 text-sm text-right text-[#1e293b] font-medium">
-                          {parseFloat(item.newQuantity || item.currentQuantity || 0).toFixed(2)} PCS
+                          {parseFloat(item.newQuantity ?? item.currentQuantity ?? 0).toFixed(2)} PCS
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="4" className="px-4 py-8 text-center text-sm text-[#64748b]">
+                      <td colSpan="5" className="px-4 py-8 text-center text-sm text-[#64748b]">
                         No items found
                       </td>
                     </tr>

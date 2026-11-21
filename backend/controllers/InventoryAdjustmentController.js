@@ -670,6 +670,7 @@ export const getInventoryAdjustmentById = async (req, res) => {
 
 // Update an inventory adjustment
 export const updateInventoryAdjustment = async (req, res) => {
+  let claimedApprovalId = null;
   try {
     const { id } = req.params;
     const adjustmentData = req.body;
@@ -728,6 +729,20 @@ export const updateInventoryAdjustment = async (req, res) => {
     const requesterRole = String(adjustmentData.userRole || "").toLowerCase();
     if (newStatus === "adjusted" && oldStatus !== "adjusted" && requesterRole !== "superadmin") {
       return res.status(403).json({ message: "Only a super admin can approve or convert inventory adjustments" });
+    }
+
+    // Claim the approval atomically: only one request can move a pending adjustment to adjusted
+    const isApproving = oldStatus === "pending_approval" && newStatus === "adjusted";
+    if (isApproving) {
+      const claimed = await InventoryAdjustment.findOneAndUpdate(
+        { _id: existingAdjustment._id, status: "pending_approval", approvalInProgress: { $ne: true } },
+        { $set: { approvalInProgress: true } },
+        { new: true }
+      );
+      if (!claimed) {
+        return res.status(409).json({ message: "This adjustment is already being approved or has already been approved" });
+      }
+      claimedApprovalId = existingAdjustment._id;
     }
 
     const oldItems = existingAdjustment.items || [];
@@ -816,13 +831,21 @@ export const updateInventoryAdjustment = async (req, res) => {
       }
     }
 
+    // Keep the original requester in userId so they still see the request after approval;
+    // the approver is recorded in modifiedBy only.
+    const { userId: _requestUserId, ...adjustmentFields } = adjustmentData;
     const updateData = {
-      ...adjustmentData,
+      ...adjustmentFields,
       modifiedBy: userId || modifiedBy,
+      ...(isApproving ? { approvalInProgress: false } : {}),
     };
 
     Object.assign(existingAdjustment, updateData);
     await existingAdjustment.save();
+    if (isApproving) {
+      // Explicit write: mongoose skips unchanged fields, and the claim above set this flag in the database
+      await InventoryAdjustment.updateOne({ _id: existingAdjustment._id }, { $set: { approvalInProgress: false } });
+    }
 
     const result = existingAdjustment.toObject();
     result.id = result._id.toString();
@@ -830,6 +853,10 @@ export const updateInventoryAdjustment = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error("Error updating inventory adjustment:", error);
+    if (claimedApprovalId) {
+      // Release the lock so the approval can be retried
+      await InventoryAdjustment.updateOne({ _id: claimedApprovalId }, { $set: { approvalInProgress: false } }).catch(() => {});
+    }
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Search, X, Plus, Trash2, AlertTriangle } from "lucide-react";
 import Header from "../components/Header";
@@ -75,12 +75,15 @@ const InventoryAdjustments = () => {
   const [deleting, setDeleting] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState([]);
   const [approvingId, setApprovingId] = useState(null);
+  const approvalInFlight = useRef(false); // blocks a second approval while one is still being applied
 
   // Admin approval from the list: pending_approval -> adjusted (backend applies the stock change)
   const handleApproveRow = async (adjustment) => {
     const adjustmentId = adjustment.id || adjustment._id;
     if (!adjustmentId) return;
+    if (approvalInFlight.current) return;
     if (!window.confirm(`Approve ${adjustment.referenceNumber || "this adjustment"}? Stock will be updated.`)) return;
+    approvalInFlight.current = true;
     setApprovingId(adjustmentId);
     try {
       const response = await fetch(`${API_URL}/api/inventory/adjustments/${adjustmentId}`, {
@@ -99,6 +102,7 @@ const InventoryAdjustments = () => {
     } catch (error) {
       alert(`Error approving adjustment: ${error.message}`);
     } finally {
+      approvalInFlight.current = false;
       setApprovingId(null);
     }
   };
@@ -674,7 +678,7 @@ const InventoryAdjustments = () => {
                                   e.stopPropagation();
                                   handleApproveRow(adjustment);
                                 }}
-                                disabled={approvingId === adjustmentId}
+                                disabled={approvingId !== null}
                                 style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", flexDirection: "row", gap: "4px", height: "28px", padding: "0 10px", marginLeft: "8px", whiteSpace: "nowrap", lineHeight: "1" }}
                                 className="rounded-none bg-[#16a34a] hover:bg-[#15803d] text-[11px] font-bold uppercase tracking-wide text-white transition-colors disabled:opacity-50"
                               >

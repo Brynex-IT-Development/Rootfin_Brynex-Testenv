@@ -22,6 +22,11 @@ const inventoryAdjustmentSchema = new mongoose.Schema(
       enum: ["draft", "pending_approval", "adjusted"],
       default: "draft",
     },
+    // Set while an approval is being applied, so the same request cannot be approved twice at once
+    approvalInProgress: {
+      type: Boolean,
+      default: false,
+    },
     
     // Location Information
     branch: {
