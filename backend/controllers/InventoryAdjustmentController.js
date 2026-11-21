@@ -433,6 +433,12 @@ export const createInventoryAdjustment = async (req, res) => {
       });
     }
 
+    // Only super admins may create an adjustment that is applied directly; everyone else must submit for approval
+    const isSuperAdminRequester = String(adjustmentData.userRole || "").toLowerCase() === "superadmin";
+    if (!isSuperAdminRequester && adjustmentData.status === "adjusted") {
+      return res.status(403).json({ message: "Only a super admin can convert an adjustment directly. Submit it for approval instead." });
+    }
+
     if (!userId || userId === "") {
       return res.status(400).json({
         message: "User ID is required. Please ensure you are logged in."
@@ -718,12 +724,10 @@ export const updateInventoryAdjustment = async (req, res) => {
     const oldStatus = existingAdjustment.status;
     const newStatus = adjustmentData.status || oldStatus;
 
-    // Only admins may approve a pending request (pending_approval -> adjusted)
-    if (oldStatus === "pending_approval" && newStatus === "adjusted") {
-      const approverPower = String(adjustmentData.userPower || "").toLowerCase();
-      if (approverPower !== "admin" && approverPower !== "super_admin") {
-        return res.status(403).json({ message: "Only an admin can approve inventory adjustments" });
-      }
+    // Only super admins may apply an adjustment: approve a pending request or convert directly
+    const requesterRole = String(adjustmentData.userRole || "").toLowerCase();
+    if (newStatus === "adjusted" && oldStatus !== "adjusted" && requesterRole !== "superadmin") {
+      return res.status(403).json({ message: "Only a super admin can approve or convert inventory adjustments" });
     }
 
     const oldItems = existingAdjustment.items || [];

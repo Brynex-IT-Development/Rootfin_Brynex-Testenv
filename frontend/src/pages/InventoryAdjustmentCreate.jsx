@@ -1385,6 +1385,7 @@ const InventoryAdjustmentCreate = () => {
         items: items.filter(item => item.itemName), // Only include items with names
         status,
         userId,
+        userRole: user?.role || "",
       };
       
       const url = isEditMode 
