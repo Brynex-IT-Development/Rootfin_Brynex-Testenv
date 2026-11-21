@@ -1300,7 +1300,8 @@ const InventoryAdjustmentCreate = () => {
       rows.map(row => {
         if (row.id === rowId) {
           const unitCost = parseFloat(value) || 0;
-          const newQty = parseFloat(row.newQuantity) || row.currentQuantity;
+          const parsedNewQty = parseFloat(row.newQuantity);
+          const newQty = Number.isNaN(parsedNewQty) ? row.currentQuantity : parsedNewQty;
           const newVal = newQty * unitCost;
           const adjusted = newVal - row.currentValue;
           return {
@@ -1367,7 +1368,7 @@ const InventoryAdjustmentCreate = () => {
           currentQuantity: row.currentQuantity,
           currentValue: row.currentValue,
           quantityAdjusted: adjustmentType === "quantity" ? parseFloat(row.quantityAdjusted) || 0 : 0,
-          newQuantity: parseFloat(row.newQuantity) || row.currentQuantity,
+          newQuantity: Number.isNaN(parseFloat(row.newQuantity)) ? row.currentQuantity : parseFloat(row.newQuantity),
           unitCost: adjustmentType === "value" ? parseFloat(row.unitCost) || 0 : 0,
           valueAdjusted: adjustmentType === "value" ? parseFloat(row.valueAdjusted) || 0 : 0,
           newValue: adjustmentType === "value" ? parseFloat(row.newValue) || 0 : row.currentValue,
