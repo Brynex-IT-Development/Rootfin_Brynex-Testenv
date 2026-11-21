@@ -11,7 +11,9 @@ const RentLedgers = () => {
   // Initial Date Filters (Start of current month to today)
   const today = new Date();
   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-  const formatDateStr = (d) => d.toISOString().split("T")[0];
+  // Use local date parts (toISOString shifts dates back a day in IST)
+  const formatDateStr = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
   const [dateFrom, setDateFrom] = useState(formatDateStr(firstDay));
   const [dateTo, setDateTo] = useState(formatDateStr(today));
@@ -145,7 +147,7 @@ const RentLedgers = () => {
               <thead>
                 <tr className="bg-[#1F1F1F] text-white text-[11px] font-semibold tracking-wider uppercase">
                   <th className="py-4 px-6">DATE</th>
-                  <th className="py-4 px-6">STORE NAME</th>
+                  <th className="py-4 px-6">LOCATION</th>
                   <th className="py-4 px-6">DEBIT (₹)</th>
                   <th className="py-4 px-6">CREDIT (₹)</th>
                   <th className="py-4 px-6">BALANCE</th>
@@ -176,7 +178,13 @@ const RentLedgers = () => {
                       <td className="py-4 px-6 font-medium text-gray-800">
                         {formatCurrency(row.debit)}
                       </td>
-                      <td className="py-4 px-6 font-medium text-gray-800">
+                      <td
+                        className="py-4 px-6 font-medium text-gray-800"
+                        title={Object.entries(row.expenseBreakdown || {})
+                          .map(([cat, amt]) => `${cat}: ₹${formatCurrency(amt)}`)
+                          .concat(row.manualCredit ? [`Manual credit: ₹${formatCurrency(row.manualCredit)}`] : [])
+                          .join("\n") || undefined}
+                      >
                         {formatCurrency(row.credit)}
                       </td>
                       <td className="py-4 px-6 font-semibold text-gray-900">

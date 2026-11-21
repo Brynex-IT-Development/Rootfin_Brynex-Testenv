@@ -272,6 +272,8 @@ const Nav = () => {
     const isLedgersOpen = openSection === "ledgers";
     const ledgerLinks = [
         { to: "/ledgers/rent", label: "Rent Ledgers" },
+        { to: "/ledgers/vendor", label: "Vendor Ledgers" },
+        { to: "/ledgers/subscription", label: "Subscription Ledgers" },
     ];
     const isLedgersActive = activePath.startsWith("/ledgers");
     const isManageUsersOpen = openSection === "manageUsers";
@@ -339,7 +341,7 @@ const Nav = () => {
     };
 
     const subLinkClasses = (path) =>
-        `block w-full pl-6 pr-4 py-2.5 text-[13px] whitespace-nowrap truncate transition-colors ${(activePath === path || (path === "/ledgers/rent" && activePath.startsWith("/ledgers/rent")))
+        `block w-full pl-6 pr-4 py-2.5 text-[13px] whitespace-nowrap truncate transition-colors ${(activePath === path || (path.startsWith("/ledgers/") && activePath.startsWith(path)))
             ? "bg-[#a855f7] text-white font-semibold"
             : "text-zinc-400 font-medium hover:text-white hover:bg-[#27272a]/40"
         }`;

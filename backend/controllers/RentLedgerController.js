@@ -1,4 +1,5 @@
 import RentLedger from "../model/RentLedger.js";
+import { getLocationExpenses } from "../utils/locationExpenses.js";
 
 export const createRentLedger = async (req, res) => {
   try {
@@ -93,7 +94,37 @@ export const getRentLedgers = async (req, res) => {
       query.storeName = new RegExp(`^${storeName}$`, "i");
     }
 
-    const ledgers = await RentLedger.find(query).sort({ date: 1, createdAt: 1 }).lean();
+    const rawLedgers = await RentLedger.find(query).sort({ date: 1, createdAt: 1 }).lean();
+
+    // Credit = all expenses of that location in the selected period
+    // (same numbers as the Income & Expenses report), plus any manual credit.
+    // If a location has more than one rent entry in the period, its expenses are
+    // added to the first entry only, so they are not counted twice.
+    const countedPeriods = new Set();
+    const ledgers = [];
+    for (const item of rawLedgers) {
+      const periodFrom = DateFrom || item.fromDate;
+      const periodTo = DateTo || item.toDate;
+      const key = `${item.locCode}|${new Date(periodFrom).toISOString()}|${new Date(periodTo).toISOString()}`;
+
+      let expenses = { total: 0, breakdown: {} };
+      if (!countedPeriods.has(key)) {
+        countedPeriods.add(key);
+        expenses = await getLocationExpenses(item.locCode, periodFrom, periodTo);
+      }
+
+      const manualCredit = Number(item.credit) || 0;
+      const credit = manualCredit + expenses.total;
+      const debit = Number(item.debit) || 0;
+      ledgers.push({
+        ...item,
+        manualCredit,
+        expenseCredit: expenses.total,
+        expenseBreakdown: expenses.breakdown,
+        credit,
+        balance: debit - credit,
+      });
+    }
 
     const totals = ledgers.reduce(
       (acc, item) => {

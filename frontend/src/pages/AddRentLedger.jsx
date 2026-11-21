@@ -3,38 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, X, ChevronDown } from "lucide-react";
 import baseUrl from "../api/api.js";
 import { useSidebar } from "../hooks/useSidebar.js";
+import useLedgerLocations from "../hooks/useLedgerLocations.js";
 
-const fallbackLocations = [
-  { locName: "Suitor Guy Edappally", locCode: "702" },
-  { locName: "Warehouse", locCode: "858" },
-  { locName: "HEAD OFFICE01", locCode: "759" },
-  { locName: "Suitor Guy Trivandrum", locCode: "700" },
-  { locName: "Zorucci Edappal", locCode: "100" },
-  { locName: "Zorucci Perinthalmanna", locCode: "133" },
-  { locName: "Zorucci Kottakkal", locCode: "122" },
-  { locName: "Suitor Guy Kottayam", locCode: "701" },
-  { locName: "Suitor Guy Perumbavoor", locCode: "703" },
-  { locName: "Suitor Guy Thrissur", locCode: "704" },
-  { locName: "Suitor Guy Chavakkad", locCode: "706" },
-  { locName: "Suitor Guy Kozhikode", locCode: "712" },
-  { locName: "Suitor Guy Vatakara", locCode: "708" },
-  { locName: "Suitor Guy Edappal", locCode: "707" },
-  { locName: "Suitor Guy Perinthalmanna", locCode: "709" },
-  { locName: "Suitor Guy Kottakkal", locCode: "711" },
-  { locName: "Suitor Guy Manjeri", locCode: "710" },
-  { locName: "Suitor Guy Palakkad", locCode: "705" },
-  { locName: "Suitor Guy Kalpetta", locCode: "717" },
-  { locName: "Suitor Guy Kannur", locCode: "716" },
-  { locName: "Suitor Guy MG Road", locCode: "718" },
-  { locName: "Dappr Squad", locCode: "555" },
-  { locName: "Production", locCode: "101" },
-  { locName: "Office", locCode: "102" },
-  { locName: "WAREHOUSE", locCode: "103" }
-];
 
 const AddRentLedger = () => {
   const navigate = useNavigate();
   const isSidebarOpen = useSidebar();
+  const fallbackLocations = useLedgerLocations();
 
   const formatDateStr = (d) => d.toISOString().split("T")[0];
   const today = new Date();
@@ -63,7 +38,7 @@ const AddRentLedger = () => {
     }
 
     if (!storeName) {
-      setStatusMessage({ type: "error", text: "Please select a Store Name." });
+      setStatusMessage({ type: "error", text: "Please select a Location." });
       return;
     }
 
@@ -211,14 +186,14 @@ const AddRentLedger = () => {
             {/* Row 2: Store Name & Debit */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">Store Name</label>
+                <label className="block text-xs font-medium text-gray-600 mb-2">Location</label>
                 <div className="relative">
                   <select
                     value={storeName}
                     onChange={(e) => setStoreName(e.target.value)}
                     className="w-full h-11 px-3.5 pr-10 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:border-[#9B48D7] focus:ring-4 focus:ring-purple-500/10 hover:border-gray-300 transition-all duration-200 cursor-pointer shadow-2xs"
                   >
-                    <option value="">Select Store</option>
+                    <option value="">Select Location</option>
                     {fallbackLocations.map((loc) => (
                       <option key={loc.locCode} value={loc.locName}>
                         {loc.locName}
