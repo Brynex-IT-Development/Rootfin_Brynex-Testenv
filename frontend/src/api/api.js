@@ -16,7 +16,7 @@
 
 
 const baseUrl = {
-     baseUrl:'https://backend.brynex.com/',
+     baseUrl:'https://rootfin-brynex-testenv.onrender.com/',
 }
 export default baseUrl
 
