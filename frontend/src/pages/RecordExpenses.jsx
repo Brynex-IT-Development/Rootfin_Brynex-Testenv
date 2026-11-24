@@ -369,8 +369,113 @@ const RecordExpenses = () => {
     });
   }, [transactions, searchTerm, selectedStore, selectedExpenseType, selectedPaymentType]);
 
+  // Normalizes past saved categories to the new standard indirect expense category names
+  const CATEGORY_MAP = {
+    // Labour charge
+    "labour charges office": "Labour charge",
+    "labour charge office": "Labour charge",
+    "labour charges": "Labour charge",
+    "labour charge": "Labour charge",
+    "labour": "Labour charge",
+    "labor": "Labour charge",
+
+    // GST fees
+    "gst late fees and interest": "GST fees",
+    "gst late fees": "GST fees",
+    "gst late fee": "GST fees",
+    "gst fees": "GST fees",
+
+    // TDS
+    "tds late fee": "TDS",
+    "interest on tds": "TDS",
+    "tds": "TDS",
+
+    // Stitching expense
+    "uniform stitching": "Stitching expense",
+    "stitching expense": "Stitching expense",
+    "stitching expenses": "Stitching expense",
+
+    // IT related expenses
+    "it and internet expenses": "IT related expenses",
+    "it related expenses": "IT related expenses",
+    "it expenses": "IT related expenses",
+    "internet expense": "IT related expenses",
+    "internet expenses": "IT related expenses",
+    "telephone internet": "IT related expenses",
+
+    // Repairs and Maintenance
+    "repairs & maintenance": "Repairs and Maintenance",
+    "repairs and maintenance": "Repairs and Maintenance",
+    "maintenance expenses": "Repairs and Maintenance",
+
+    // Salary /salary advances/ Wages
+    "salary": "Salary /salary advances/ Wages",
+    "salary advance": "Salary /salary advances/ Wages",
+    "salary/salary advance": "Salary /salary advances/ Wages",
+    "salary and wages": "Salary /salary advances/ Wages",
+    "salaries and employee wages": "Salary /salary advances/ Wages",
+    "employee wages": "Salary /salary advances/ Wages",
+    "salary /salary advances/ wages": "Salary /salary advances/ Wages",
+
+    // Staff Welfare Expenses
+    "staff welfare": "Staff Welfare Expenses",
+    "staff welfare expenses": "Staff Welfare Expenses",
+    "staff food and accomodation": "Staff Welfare Expenses",
+    "staff accommodation": "Staff Welfare Expenses",
+    "staff reimbursement": "Staff Welfare Expenses",
+
+    // Travel Expense
+    "travel exp": "Travel Expense",
+    "travel expense": "Travel Expense",
+    "travel expenses": "Travel Expense",
+    "employee travel expenses": "Travel Expense",
+    "cluster travelling expense": "Travel Expense",
+
+    // Building Rent
+    "rent": "Building Rent",
+    "store rent": "Building Rent",
+    "rent expense": "Building Rent",
+    "building rent": "Building Rent",
+    "rent expenses - warehouse": "Building Rent",
+
+    // Bank Fees and Charges
+    "bank fees and charges": "Bank Fees and Charges",
+    "bank charges": "Bank Charges",
+    "bank fee": "Bank Fees and Charges",
+
+    // Printing and Stationery -> Office Supplies
+    "printing & stationary": "Office Supplies",
+    "printing stationary": "Office Supplies",
+    "printing and stationery": "Office Supplies",
+    "printer consumables": "Office Supplies",
+
+    // Direct Expenses
+    "dry cleaning": "Dry Cleaning Expense",
+    "dry cleaning expenses": "Dry Cleaning Expense",
+    "dry cleaning expense": "Dry Cleaning Expense",
+    "altration": "Alteration",
+    "alteration": "Alteration",
+    "alteration expense": "Alteration Expense",
+    "alteration expenses": "Alteration Expense",
+    "raw materials and consumables": "Raw Materials And Consumables",
+    "raw materials & consumables": "Raw Materials And Consumables",
+    "raw materials": "Raw Materials And Consumables",
+    "freight charges": "Freight Charges",
+    "freight expenses": "Freight Charges",
+    "freight expense": "Freight Charges",
+    "raw materials / dress accessories": "Material/Dress Accessories",
+    "raw materials/dress accessories": "Material/Dress Accessories",
+    "material/dress accessories": "Material/Dress Accessories",
+    "material": "Material/Dress Accessories",
+    "materials": "Material/Dress Accessories",
+  };
+
   const getCleanCategory = (cat) => {
     if (!cat) return "-";
+    const normalizedKey = cat.toLowerCase().trim();
+    if (CATEGORY_MAP[normalizedKey]) {
+      return CATEGORY_MAP[normalizedKey];
+    }
     return cat.replace(/^[a-z]/, (m) => m.toUpperCase());
   };
 

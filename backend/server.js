@@ -31,6 +31,7 @@ import ManufacturerRoutes from "./route/ManufacturerRoutes.js";
 import BrandRoutes from "./route/BrandRoutes.js";
 import ExternalSalesRoutes from "./route/ExternalSalesRoutes.js";
 import ExpenseTargetRoutes from "./route/ExpenseTargetRoutes.js";
+import ExpenseCategoryRoutes from "./route/ExpenseCategoryRoutes.js";
 import DashboardRoutes from "./route/DashboardRoutes.js";
 import setupSwagger   from "./swagger.js";
 
@@ -100,6 +101,7 @@ app.use("/api",     ManufacturerRoutes);
 app.use("/api",     BrandRoutes);
 app.use("/api",     ExternalSalesRoutes);
 app.use("/api",     ExpenseTargetRoutes);
+app.use("/api",     ExpenseCategoryRoutes);
 app.use("/api/dashboard", DashboardRoutes);
 
 // Test route to verify server is running

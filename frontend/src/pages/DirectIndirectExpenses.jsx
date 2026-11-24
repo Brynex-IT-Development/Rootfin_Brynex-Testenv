@@ -13,7 +13,8 @@ import {
   Layers, 
   Building2, 
   FileText,
-  Lock
+  Lock,
+  Plus
 } from "lucide-react";
 import { BsBank2 } from "react-icons/bs";
 import { MdCurrencyRupee } from "react-icons/md";
@@ -212,127 +213,48 @@ const SearchableSelect = ({
 };
 
 const DIRECT_EXPENSE_CATS = [
-  { value: "Dry Cleaning", label: "Dry Cleaning" },
-  { value: "Altration", label: "Altration" },
-  { value: "Material", label: "Material" },
+  { value: "Dry Cleaning Expense", label: "Dry Cleaning Expense" },
+  { value: "Alteration", label: "Alteration" },
   { value: "Raw Materials And Consumables", label: "Raw Materials And Consumables" },
   { value: "Freight Charges", label: "Freight Charges" },
-  { value: "Product expenses", label: "Product expenses" },
-  { value: "Labour Charges - Warehouse", label: "Labour Charges - Warehouse" },
-  { value: "Cost of Goods Sold", label: "Cost of Goods Sold" },
-  { value: "Labor", label: "Labor" },
-  { value: "Materials", label: "Materials" },
-  { value: "Subcontractor", label: "Subcontractor" },
-  { value: "Job Costing", label: "Job Costing" },
-  { value: "Transportation Expenses", label: "Transportation Expenses" },
-  { value: "Freight Expenses", label: "Freight Expenses" },
-  { value: "Dry Cleaning Expenses", label: "Dry Cleaning Expenses" },
-  { value: "Uniform Stitching", label: "Uniform Stitching" },
+  { value: "Stitching expense", label: "Stitching expense" },
+  { value: "Material/Dress Accessories", label: "Material/Dress Accessories" },
   { value: "Alteration Expense", label: "Alteration Expense" },
-  { value: "Raw Materials / Dress Accessories", label: "Raw Materials / Dress Accessories" },
 ];
 
 const INDIRECT_EXPENSE_CATS = [
-  { value: "Courier Charges", label: "Courier Charges" },
-  { value: "Repairs & Maintenance", label: "Repairs & Maintenance" },
-  { value: "Incentive", label: "Incentive" },
-  { value: "Salary Advance", label: "Salary Advance" },
-  { value: "Travel Exp", label: "Travel Exp" },
-  { value: "Fuel Exp", label: "Fuel Exp" },
-  { value: "Office Expense", label: "Office Expense" },
-  { value: "Internet Expense", label: "Internet Expense" },
-  { value: "Electricity Charges", label: "Electricity Charges" },
-  { value: "Water Charges", label: "Water Charges" },
-  { value: "Waste Management", label: "Waste Management" },
-  { value: "Printing & Stationary", label: "Printing & Stationary" },
-  { value: "Staff Welfare", label: "Staff Welfare" },
-  { value: "Staff Accommodation", label: "Staff Accommodation" },
-  { value: "Rent", label: "Rent" },
-  { value: "Asset Purchase", label: "Asset Purchase" },
-  { value: "Compensation", label: "Compensation" },
-  { value: "Refund", label: "Refund" },
   { value: "Office Supplies", label: "Office Supplies" },
   { value: "Bank Fees and Charges", label: "Bank Fees and Charges" },
   { value: "Travel Expense", label: "Travel Expense" },
   { value: "Directors Travelling Expense", label: "Directors Travelling Expense" },
-  { value: "Employee Travel Expenses", label: "Employee Travel Expenses" },
-  { value: "Cluster Travelling Expense", label: "Cluster Travelling Expense" },
-  { value: "Telephone Expense", label: "Telephone Expense" },
-  { value: "Automobile Expense", label: "Automobile Expense" },
-  { value: "IT and Internet Expenses", label: "IT and Internet Expenses" },
-  { value: "Rent Expense", label: "Rent Expense" },
-  { value: "Janitorial Expense", label: "Janitorial Expense" },
-  { value: "Postage", label: "Postage" },
-  { value: "Bad Debt", label: "Bad Debt" },
-  { value: "Employee Wages", label: "Employee Wages" },
-  { value: "Meals and Entertainment", label: "Meals and Entertainment" },
-  { value: "Depreciation Expense", label: "Depreciation Expense" },
-  { value: "Consultant Expense", label: "Consultant Expense" },
+  { value: "IT related expenses", label: "IT related expenses" },
+  { value: "Building Rent", label: "Building Rent" },
   { value: "Repairs and Maintenance", label: "Repairs and Maintenance" },
-  { value: "Other Expenses", label: "Other Expenses" },
-  { value: "Lodging", label: "Lodging" },
-  { value: "Transportation Expense", label: "Transportation Expense" },
-  { value: "Depreciation And Amortisation", label: "Depreciation And Amortisation" },
   { value: "EPF Contribution-Employer", label: "EPF Contribution-Employer" },
   { value: "ESI Contribution-Employer", label: "ESI Contribution-Employer" },
-  { value: "Interest and Fine", label: "Interest and Fine" },
-  { value: "Fines and Penalties", label: "Fines and Penalties" },
-  { value: "Rates & Taxes", label: "Rates & Taxes" },
-  { value: "Interest on TDS", label: "Interest on TDS" },
-  { value: "Fine's and penalty-Electricity", label: "Fine's and penalty-Electricity" },
-  { value: "Interest & Late fee", label: "Interest & Late fee" },
   { value: "Telephone & Internet Expense", label: "Telephone & Internet Expense" },
-  { value: "Office Expenses [parent]", label: "Office Expenses [parent]" },
-  { value: "Printing and Stationery", label: "Printing and Stationery" },
-  { value: "Internet Expenses", label: "Internet Expenses" },
   { value: "Office Expenses", label: "Office Expenses" },
-  { value: "Printer Consumables", label: "Printer Consumables" },
-  { value: "Petty Expenses", label: "Petty Expenses" },
-  { value: "Fuel Expenses", label: "Fuel Expenses" },
-  { value: "Legal Charges", label: "Legal Charges" },
   { value: "Charity", label: "Charity" },
   { value: "Cleaning Expenses", label: "Cleaning Expenses" },
-  { value: "Labour Charges Office", label: "Labour Charges Office" },
+  { value: "Labour charge", label: "Labour charge" },
+  { value: "Electricity Charges", label: "Electricity Charges" },
+  { value: "Water Charges", label: "Water Charges" },
+  { value: "Courier Charges", label: "Courier Charges" },
   { value: "Parking charge", label: "Parking charge" },
   { value: "Subscription Charges", label: "Subscription Charges" },
   { value: "Marketing & Promotion", label: "Marketing & Promotion" },
-  { value: "Advertising And Marketing", label: "Advertising And Marketing" },
-  { value: "Salary", label: "Salary" },
-  { value: "Overtime Payment", label: "Overtime Payment" },
-  { value: "Consultation Charges", label: "Consultation Charges" },
-  { value: "Accounting Charges", label: "Accounting Charges" },
-  { value: "Bank Charges", label: "Bank Charges" },
-  { value: "Finance Charges", label: "Finance Charges" },
-  { value: "Paytm Deductions", label: "Paytm Deductions" },
-  { value: "EMI", label: "EMI" },
-  { value: "Utility Charges", label: "Utility Charges" },
+  { value: "Salary /salary advances/ Wages", label: "Salary /salary advances/ Wages" },
   { value: "Staff Welfare Expenses", label: "Staff Welfare Expenses" },
-  { value: "Staff Food And Accomodation", label: "Staff Food And Accomodation" },
-  { value: "Gift Expenses", label: "Gift Expenses" },
-  { value: "Rent Expenses - Warehouse", label: "Rent Expenses - Warehouse" },
   { value: "Generator Expenses", label: "Generator Expenses" },
   { value: "Meeting Expenses", label: "Meeting Expenses" },
-  { value: "Vehicle Insurance", label: "Vehicle Insurance" },
-  { value: "Printer Service", label: "Printer Service" },
-  { value: "Domain Purchase", label: "Domain Purchase" },
-  { value: "Filing fees", label: "Filing fees" },
-  { value: "Selling Expenses", label: "Selling Expenses" },
-  { value: "Discount Allowed", label: "Discount Allowed" },
+  { value: "House Rent Allowance", label: "House Rent Allowance" },
   { value: "Equipment Rent", label: "Equipment Rent" },
-  { value: "MCA Charges", label: "MCA Charges" },
-  { value: "GST Late fees and interest", label: "GST Late fees and interest" },
-  { value: "Rental Supplies Expense", label: "Rental Supplies Expense" },
+  { value: "GST fees", label: "GST fees" },
   { value: "Training & Development Expenses", label: "Training & Development Expenses" },
   { value: "Interior Designing", label: "Interior Designing" },
   { value: "Audit Fee", label: "Audit Fee" },
   { value: "Lease Registration Charges", label: "Lease Registration Charges" },
-  { value: "Payment Gateway Charges", label: "Payment Gateway Charges" },
-  { value: "House Rent Allowance", label: "House Rent Allowance" },
-  { value: "Utility Connection / Government Fees", label: "Utility Connection / Government Fees" },
-  { value: "TDS Late fee", label: "TDS Late fee" },
-  { value: "Trademark Expense", label: "Trademark Expense" },
-  { value: "Uniform Expense", label: "Uniform Expense" },
-  { value: "Food expense", label: "Food expense" },
+  { value: "TDS", label: "TDS" },
 ];
 
 const fallbackLocations = [
@@ -396,13 +318,162 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const isSuperAdmin = (currentusers.role || "").toLowerCase() === "superadmin";
   const isFinancialHead = (currentusers.role || "").toLowerCase() === "financial_head";
   const canSelectStore = isAdmin || isSuperAdmin || isFinancialHead;
+  const canManageCategories = isSuperAdmin || isFinancialHead;
 
   const defaultStore = canSelectStore ? "" : (currentusers.locCode || "759");
 
   const [category, setCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
   const [branch, setBranch] = useState(defaultStore);
   const [amount, setAmount] = useState("");
   const [remarks, setRemarks] = useState("");
+
+  // Custom Categories from Database
+  const [customDirectCats, setCustomDirectCats] = useState([]);
+  const [customIndirectCats, setCustomIndirectCats] = useState([]);
+  const [isAddCatModalOpen, setIsAddCatModalOpen] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [addingCat, setAddingCat] = useState(false);
+  const [catModalError, setCatModalError] = useState("");
+
+  // Subcategory States & Management
+  const [subCategoriesList, setSubCategoriesList] = useState([]);
+  const [isAddSubCatModalOpen, setIsAddSubCatModalOpen] = useState(false);
+  const [subCatParentCategory, setSubCatParentCategory] = useState("");
+  const [newSubCatName, setNewSubCatName] = useState("");
+  const [addingSubCat, setAddingSubCat] = useState(false);
+  const [subCatModalError, setSubCatModalError] = useState("");
+
+  // Fetch custom categories on mount
+  const fetchCustomCategories = async () => {
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/expense-categories`);
+      if (res.ok) {
+        const json = await res.json();
+        const list = json.data || [];
+        setCustomDirectCats(
+          list
+            .filter((c) => c.expenseType === "direct")
+            .map((c) => ({ value: c.name, label: c.name }))
+        );
+        setCustomIndirectCats(
+          list
+            .filter((c) => c.expenseType === "indirect")
+            .map((c) => ({ value: c.name, label: c.name }))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to fetch custom expense categories:", err);
+    }
+  };
+
+  // Fetch subcategories for current expenseType and selected category
+  const fetchSubCategories = async () => {
+    try {
+      const url = `${baseUrl.baseUrl}api/expense-subcategories?expenseType=${expenseType}${category ? `&category=${encodeURIComponent(category)}` : ""}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const json = await res.json();
+        const list = json.data || [];
+        setSubCategoriesList(list.map((sc) => ({ value: sc.name, label: sc.name, category: sc.category })));
+      }
+    } catch (err) {
+      console.error("Failed to fetch subcategories:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCustomCategories();
+  }, []);
+
+  useEffect(() => {
+    fetchSubCategories();
+    setSubCategory("");
+  }, [category, expenseType]);
+
+  const handleAddCategorySubmit = async (e) => {
+    if (e) e.preventDefault();
+    setCatModalError("");
+    const trimmed = newCatName.trim();
+    if (!trimmed) {
+      setCatModalError("Category name cannot be empty.");
+      return;
+    }
+
+    setAddingCat(true);
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/expense-categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: trimmed,
+          expenseType: expenseType, // "direct" or "indirect"
+          createdBy: currentusers.name || currentusers.username || (isSuperAdmin ? "SuperAdmin" : "FinancialHead"),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setCatModalError(json.message || "Failed to add category.");
+      } else {
+        await fetchCustomCategories();
+        setCategory(trimmed);
+        setNewCatName("");
+        setIsAddCatModalOpen(false);
+      }
+    } catch (err) {
+      console.error("Error adding category:", err);
+      setCatModalError("Network error: Could not add category.");
+    } finally {
+      setAddingCat(false);
+    }
+  };
+
+  const handleAddSubCategorySubmit = async (e) => {
+    if (e) e.preventDefault();
+    setSubCatModalError("");
+    const trimmedSub = newSubCatName.trim();
+    const targetParentCat = subCatParentCategory.trim() || category.trim();
+
+    if (!targetParentCat) {
+      setSubCatModalError("Please select a parent Category.");
+      return;
+    }
+    if (!trimmedSub) {
+      setSubCatModalError("Subcategory name cannot be empty.");
+      return;
+    }
+
+    setAddingSubCat(true);
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/expense-subcategories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: trimmedSub,
+          category: targetParentCat,
+          expenseType: expenseType,
+          createdBy: currentusers.name || currentusers.username || (isSuperAdmin ? "SuperAdmin" : "FinancialHead"),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setSubCatModalError(json.message || "Failed to add subcategory.");
+      } else {
+        if (category !== targetParentCat) {
+          setCategory(targetParentCat);
+        }
+        await fetchSubCategories();
+        setSubCategory(trimmedSub);
+        setNewSubCatName("");
+        setIsAddSubCatModalOpen(false);
+      }
+    } catch (err) {
+      console.error("Error adding subcategory:", err);
+      setSubCatModalError("Network error: Could not add subcategory.");
+    } finally {
+      setAddingSubCat(false);
+    }
+  };
   
   // Payment Method States
   const [paymentMethod, setPaymentMethod] = useState("bank");
@@ -424,7 +495,23 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
 
-  const categories = expenseType === "direct" ? DIRECT_EXPENSE_CATS : INDIRECT_EXPENSE_CATS;
+  const categories = useMemo(() => {
+    const defaultList = expenseType === "direct" ? DIRECT_EXPENSE_CATS : INDIRECT_EXPENSE_CATS;
+    const customList = expenseType === "direct" ? customDirectCats : customIndirectCats;
+
+    // Combine avoiding duplicates
+    const combined = [...defaultList];
+    const existingValues = new Set(defaultList.map((c) => c.value.toLowerCase()));
+
+    customList.forEach((c) => {
+      if (!existingValues.has(c.value.toLowerCase())) {
+        combined.push(c);
+        existingValues.add(c.value.toLowerCase());
+      }
+    });
+
+    return combined;
+  }, [expenseType, customDirectCats, customIndirectCats]);
 
   // Reset category when tab switches
   useEffect(() => {
@@ -548,7 +635,8 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
       type: "Expense",
       expenseType: expenseType, // "direct" | "indirect"
       category: category,
-      remark: remarks.trim() ? `[${expenseType.toUpperCase()}] ${remarks.trim()}` : `[${expenseType.toUpperCase()}] ${category}`,
+      subCategory: subCategory.trim() || "",
+      remark: remarks.trim() ? `[${expenseType.toUpperCase()}] ${remarks.trim()}` : `[${expenseType.toUpperCase()}] ${category}${subCategory ? ` - ${subCategory}` : ""}`,
       locCode: targetBranch,
       isAdminLevel: canSelectStore,
       amount: `-${amount}`,
@@ -604,7 +692,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
 
   return (
     <div className={`min-h-screen bg-[#FAFAFB] transition-all duration-300 ${isSidebarOpen ? "md:ml-64 ml-0" : "ml-0"}`}>
-      <div className="w-full max-w-6xl px-6 sm:px-10 py-8">
+      <div className="w-full px-6 sm:px-10 py-8">
         
         {/* Top Header: Sidebar Menu Toggle, Back Button & Direct / Indirect Expense Pill Switch */}
         <div className="mb-8 flex flex-wrap items-center gap-3">
@@ -675,22 +763,82 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
         {/* Form Container */}
         <form onSubmit={handleSubmit} className="space-y-6">
           
-          {/* Row 1: Category, Branch, Amount (3 Columns) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Row 1: Category, Sub Category, Branch, Amount (4 Columns) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             
             {/* Category */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 tracking-wide mb-2 uppercase">
                 Category <span className="text-red-500 font-bold">*</span>
               </label>
-              <SearchableSelect
-                value={category}
-                onChange={(val) => setCategory(val)}
-                options={categories}
-                placeholder="Select Category"
-                searchPlaceholder="Search category..."
-                icon={Layers}
-              />
+              <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <SearchableSelect
+                    value={category}
+                    onChange={(val) => setCategory(val)}
+                    options={categories}
+                    placeholder="Select Category"
+                    searchPlaceholder="Search category..."
+                    icon={Layers}
+                  />
+                </div>
+                {canManageCategories && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCatModalError("");
+                      setNewCatName("");
+                      setIsAddCatModalOpen(true);
+                    }}
+                    className="w-10 h-10 rounded-full bg-[#8A2BE2] hover:bg-[#7822c9] text-white p-0 shrink-0 shadow-md hover:shadow-lg transition-all cursor-pointer group hover:scale-105 active:scale-95"
+                    style={{
+                      display: "grid",
+                      placeItems: "center",
+                    }}
+                    title={`Add new ${expenseType} category`}
+                  >
+                    <Plus size={22} strokeWidth={2.7} className="m-auto block" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Sub Category */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 tracking-wide mb-2 uppercase">
+                Sub Category
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <SearchableSelect
+                    value={subCategory}
+                    onChange={(val) => setSubCategory(val)}
+                    options={subCategoriesList}
+                    placeholder={category ? (subCategoriesList.length > 0 ? "Select Sub Category" : "No subcategories (optional)") : "Select category first"}
+                    searchPlaceholder="Search subcategory..."
+                    icon={Layers}
+                  />
+                </div>
+                {canManageCategories && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSubCatModalError("");
+                      setNewSubCatName("");
+                      setSubCatParentCategory(category || "");
+                      setIsAddSubCatModalOpen(true);
+                    }}
+                    className="w-10 h-10 rounded-full bg-[#8A2BE2] hover:bg-[#7822c9] text-white p-0 shrink-0 shadow-md hover:shadow-lg transition-all cursor-pointer group hover:scale-105 active:scale-95"
+                    style={{
+                      display: "grid",
+                      placeItems: "center",
+                    }}
+                    title={`Add subcategory for ${category || `${expenseType} category`}`}
+                  >
+                    <Plus size={22} strokeWidth={2.7} className="m-auto block" />
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Branch */}
@@ -988,6 +1136,150 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
           </div>
 
         </form>
+
+        {/* Modal for Super Admin & Financial Head to Add Category */}
+        {isAddCatModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in-0 duration-150">
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-gray-100">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                  <Plus size={18} className="text-[#9B48D7]" />
+                  <span>Add New {expenseType === "direct" ? "Direct" : "Indirect"} Category</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsAddCatModalOpen(false)}
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddCategorySubmit} className="mt-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">
+                    Category Name
+                  </label>
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="e.g. Courier & Freight, Software Licensing..."
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#9B48D7] focus:ring-4 focus:ring-purple-500/10"
+                  />
+                  <p className="mt-1.5 text-[11px] text-gray-400">
+                    Will be saved permanently as an active {expenseType} category and available to all stores.
+                  </p>
+                </div>
+
+                {catModalError && (
+                  <div className="rounded-xl bg-red-50 p-3 text-xs font-medium text-red-600 border border-red-200">
+                    {catModalError}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddCatModalOpen(false)}
+                    disabled={addingCat}
+                    className="rounded-xl px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addingCat || !newCatName.trim()}
+                    className="rounded-xl bg-[#9B48D7] hover:bg-[#8B38C7] text-white px-5 py-2 text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {addingCat ? "Adding..." : "Add Category"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal for Super Admin & Financial Head to Add Subcategory */}
+        {isAddSubCatModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in-0 duration-150">
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-gray-100">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                  <Plus size={18} className="text-[#9B48D7]" />
+                  <span>Add New Sub Category</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsAddSubCatModalOpen(false)}
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddSubCategorySubmit} className="mt-5 space-y-4">
+                {/* Select Parent Category */}
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">
+                    Parent Category <span className="text-red-500">*</span>
+                  </label>
+                  <SearchableSelect
+                    value={subCatParentCategory}
+                    onChange={(val) => setSubCatParentCategory(val)}
+                    options={categories}
+                    placeholder="Select Parent Category"
+                    searchPlaceholder="Search category..."
+                    icon={Layers}
+                  />
+                  <p className="mt-1 text-[11px] text-gray-400">
+                    The subcategory will be tied exclusively to this {expenseType} category.
+                  </p>
+                </div>
+
+                {/* Subcategory Name */}
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">
+                    Sub Category Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="e.g. Courier charges - DHL, Fiber Net..."
+                    value={newSubCatName}
+                    onChange={(e) => setNewSubCatName(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#9B48D7] focus:ring-4 focus:ring-purple-500/10"
+                  />
+                </div>
+
+                {subCatModalError && (
+                  <div className="rounded-xl bg-red-50 p-3 text-xs font-medium text-red-600 border border-red-200">
+                    {subCatModalError}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddSubCatModalOpen(false)}
+                    disabled={addingSubCat}
+                    className="rounded-xl px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addingSubCat || !newSubCatName.trim() || !subCatParentCategory}
+                    className="rounded-xl bg-[#9B48D7] hover:bg-[#8B38C7] text-white px-5 py-2 text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {addingSubCat ? "Adding..." : "Add Sub Category"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
