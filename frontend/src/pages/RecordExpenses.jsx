@@ -399,9 +399,13 @@ const RecordExpenses = () => {
     "it and internet expenses": "IT related expenses",
     "it related expenses": "IT related expenses",
     "it expenses": "IT related expenses",
-    "internet expense": "IT related expenses",
-    "internet expenses": "IT related expenses",
-    "telephone internet": "IT related expenses",
+
+    // Telephone & Internet Expense
+    "internet expense": "Telephone & Internet Expense",
+    "internet expenses": "Telephone & Internet Expense",
+    "telephone internet": "Telephone & Internet Expense",
+    "telephone expense": "Telephone & Internet Expense",
+    "telephone & internet expense": "Telephone & Internet Expense",
 
     // Repairs and Maintenance
     "repairs & maintenance": "Repairs and Maintenance",
