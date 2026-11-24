@@ -18,66 +18,66 @@ const firstOfMonth = () => {
 };
 
 const STORE_LIST = [
-  { locName: "Dappr Squad",      locCode: "555" },
-  { locName: "G-Edappal",        locCode: "707" },
-  { locName: "G-Edappally",      locCode: "702" },
-  { locName: "G-Kalpetta",       locCode: "717" },
-  { locName: "G-Kannur",         locCode: "716" },
-  { locName: "G-Kottakkal",      locCode: "711" },
-  { locName: "G-Kottayam",       locCode: "701" },
-  { locName: "G-Manjeri",        locCode: "710" },
-  { locName: "G-Mg Road",        locCode: "718" },
-  { locName: "G-Palakkad",       locCode: "705" },
+  { locName: "Dappr Squad", locCode: "555" },
+  { locName: "G-Edappal", locCode: "707" },
+  { locName: "G-Edappally", locCode: "702" },
+  { locName: "G-Kalpetta", locCode: "717" },
+  { locName: "G-Kannur", locCode: "716" },
+  { locName: "G-Kottakkal", locCode: "711" },
+  { locName: "G-Kottayam", locCode: "701" },
+  { locName: "G-Manjeri", locCode: "710" },
+  { locName: "G-Mg Road", locCode: "718" },
+  { locName: "G-Palakkad", locCode: "705" },
   { locName: "G-Perinthalmanna", locCode: "709" },
-  { locName: "G-Perumbavoor",    locCode: "703" },
-  { locName: "G-Thrissur",       locCode: "704" },
-  { locName: "G-Vadakara",       locCode: "708" },
-  { locName: "G-Chavakkad",      locCode: "706" },
-  { locName: "G-Calicut",        locCode: "712" },
-  { locName: "HEAD OFFICE01",    locCode: "759" },
-  { locName: "Office",           locCode: "102" },
-  { locName: "Production",       locCode: "101" },
-  { locName: "SG-Trivandrum",    locCode: "700" },
-  { locName: "Warehouse",        locCode: "858" },
-  { locName: "WAREHOUSE",        locCode: "103" },
-  { locName: "Z-Edappal",        locCode: "100" },
-  { locName: "Z-Edapally",       locCode: "144" },
-  { locName: "Z-Kottakkal",      locCode: "122" },
+  { locName: "G-Perumbavoor", locCode: "703" },
+  { locName: "G-Thrissur", locCode: "704" },
+  { locName: "G-Vadakara", locCode: "708" },
+  { locName: "G-Chavakkad", locCode: "706" },
+  { locName: "G-Calicut", locCode: "712" },
+  { locName: "HEAD OFFICE01", locCode: "759" },
+  { locName: "Office", locCode: "102" },
+  { locName: "Production", locCode: "101" },
+  { locName: "SG-Trivandrum", locCode: "700" },
+  { locName: "Warehouse", locCode: "858" },
+  { locName: "WAREHOUSE", locCode: "103" },
+  { locName: "Z-Edappal", locCode: "100" },
+  { locName: "Z-Edapally", locCode: "144" },
+  { locName: "Z-Kottakkal", locCode: "122" },
   { locName: "Z-Perinthalmanna", locCode: "133" },
 ];
 
 const EXPENSE_CATEGORIES = new Set([
-  "petty expenses","staff reimbursement","maintenance expenses","telephone internet",
-  "utility bill","salary","rent","courier charges","asset purchase","promotion_services",
-  "spot incentive","other expenses","shoe sales return",
-  "shirt sales return","dry cleaning","altration","material","travel exp","fuel exp",
-  "waste management","water charges","printing stationary","staff welfare",
-  "staff accommodation","incentive","write off",
-  "office supplies","bank fees and charges","travel expense","directors travelling expense",
-  "employee travel expenses","cluster travelling expense","telephone expense","automobile expense",
-  "it and internet expenses","rent expense","janitorial expense","postage","bad debt",
-  "salaries and employee wages","meals and entertainment","depreciation expense","consultant expense",
-  "repairs and maintenance","repairs & maintenance","other expenses","lodging","transportation expense",
-  "depreciation and amortisation","epf contribution-employer","esi contribution-employer",
-  "interest and fine","fines and penalties","rates & taxes","interest on tds",
-  "fine's and penalty-electricity","interest & late fee","telephone & internet expense",
-  "office expenses [parent]","printing and stationery","printing & stationary","internet expenses",
-  "internet expense","office expenses","office expense","printer consumables","fuel expenses",
-  "legal charges","charity","cleaning expenses","labour charges office","parking charge",
-  "subscription charges","marketing & promotion","advertising and marketing","salary and wages",
-  "salary/salary advance","salary advance","employee wages","overtime payment","consultation charges","accounting charges",
-  "bank charges","finance charges","paytm deductions","car loan interest","emi","utility charges",
-  "electricity charges","staff welfare expenses","staff food and accomodation","gift expenses",
-  "rent expenses - warehouse","generator expenses","meeting expenses","vehicle insurance",
-  "printer service","domain purchase","filing fees","selling expenses","discount allowed",
-  "equipment rent","mca charges","gst late fees and interest","rental supplies expense",
-  "training & development expenses","interior designing","audit fee","lease registration charges",
-  "payment gateway charges","house rent allowance","utility connection / government fees",
-  "tds late fee","trademark expense","cost of goods sold","labor","materials","subcontractor",
-  "job costing","transportation expenses","freight expenses","dry cleaning expenses",
-  "uniform stitching","alteration expense","raw materials / dress accessories","raw materials and consumables",
-  "raw materials","raw material","raw materials & consumables","raw materials/dress accessories",
-  "freight charges","product expenses","labour charges - warehouse","uniform expense","food expense",
+  "petty expenses", "staff reimbursement", "maintenance expenses", "telephone internet",
+  "utility bill", "salary", "rent", "courier charges", "asset purchase", "promotion_services",
+  "spot incentive", "other expenses", "shoe sales return",
+  "shirt sales return", "dry cleaning", "altration", "material", "travel exp", "fuel exp",
+  "waste management", "water charges", "printing stationary", "staff welfare",
+  "staff accommodation", "incentive", "write off",
+  "office supplies", "bank fees and charges", "travel expense", "directors travelling expense",
+  "employee travel expenses", "cluster travelling expense", "telephone expense", "automobile expense",
+  "it and internet expenses", "rent expense", "janitorial expense", "postage", "bad debt",
+  "salaries and employee wages", "meals and entertainment", "depreciation expense", "consultant expense",
+  "repairs and maintenance", "repairs & maintenance", "other expenses", "lodging", "transportation expense",
+  "depreciation and amortisation", "epf contribution-employer", "esi contribution-employer",
+  "interest and fine", "fines and penalties", "rates & taxes", "interest on tds",
+  "fine's and penalty-electricity", "interest & late fee", "telephone & internet expense",
+  "office expenses [parent]", "printing and stationery", "printing & stationary", "internet expenses",
+  "internet expense", "office expenses", "office expense", "printer consumables", "fuel expenses",
+  "legal charges", "charity", "cleaning expenses", "labour charges office", "parking charge",
+  "subscription charges", "marketing & promotion", "advertising and marketing", "salary and wages",
+  "salary/salary advance", "salary advance", "employee wages", "overtime payment", "consultation charges", "accounting charges",
+  "bank charges", "finance charges", "paytm deductions", "car loan interest", "emi", "utility charges",
+  "electricity charges", "staff welfare expenses", "staff food and accomodation", "gift expenses",
+  "rent expenses - warehouse", "generator expenses", "meeting expenses", "vehicle insurance",
+  "printer service", "domain purchase", "filing fees", "selling expenses", "discount allowed",
+  "equipment rent", "mca charges", "gst late fees and interest", "rental supplies expense",
+  "training & development expenses", "interior designing", "audit fee", "lease registration charges",
+  "payment gateway charges", "house rent allowance", "utility connection / government fees",
+  "tds late fee", "trademark expense", "cost of goods sold", "labor", "materials", "subcontractor",
+  "job costing", "transportation expenses", "freight expenses", "dry cleaning expenses",
+  "uniform stitching", "alteration expense", "raw materials / dress accessories", "raw materials and consumables",
+  "raw materials", "raw material", "raw materials & consumables", "raw materials/dress accessories",
+  "freight charges", "product expenses", "labour charges - warehouse", "uniform expense", "food expense",
   "refund"
 ]);
 
@@ -86,8 +86,8 @@ const CATEGORY_LABEL_MAP = {
   "dry cleaning":                       "Dry Cleaning Expense",
   "dry cleaning expense":               "Dry Cleaning Expense",
   "dry cleaning expenses":              "Dry Cleaning Expense",
-  "altration":                          "Alteration",
-  "alteration":                         "Alteration",
+  "altration":                          "Alteration Expense",
+  "alteration":                         "Alteration Expense",
   "alteration expense":                 "Alteration Expense",
   "alteration expenses":                "Alteration Expense",
   "material":                           "Material/Dress Accessories",
@@ -249,7 +249,7 @@ export default function IncomeExpenseReport() {
   const [filterCategories, setFilterCategories] = useState([]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [selectedStore, setSelectedStore] = useState("all");
-  
+
   const [incomeRows, setIncomeRows] = useState([]);
   const [returnableIncomeRows, setReturnableIncomeRows] = useState([]);
   const [expenseRows, setExpenseRows] = useState([]);
@@ -273,7 +273,7 @@ export default function IncomeExpenseReport() {
         setShowCategoryDropdown(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -332,8 +332,8 @@ export default function IncomeExpenseReport() {
       const withLoc = (rows, lc) => (rows || []).map((item) => ({ ...item, locCode: item.locCode || lc }));
       const bookingData = { dataSet: { data: twsResults.flatMap((r, i) => withLoc(r[0]?.dataSet?.data, twsLocCodes[i])) } };
       const rentoutData = { dataSet: { data: twsResults.flatMap((r, i) => withLoc(r[1]?.dataSet?.data, twsLocCodes[i])) } };
-      const returnData  = { dataSet: { data: twsResults.flatMap((r, i) => withLoc(r[2]?.dataSet?.data, twsLocCodes[i])) } };
-      const cancelData  = { dataSet: { data: twsResults.flatMap((r, i) => withLoc(r[3]?.dataSet?.data, twsLocCodes[i])) } };
+      const returnData = { dataSet: { data: twsResults.flatMap((r, i) => withLoc(r[2]?.dataSet?.data, twsLocCodes[i])) } };
+      const cancelData = { dataSet: { data: twsResults.flatMap((r, i) => withLoc(r[3]?.dataSet?.data, twsLocCodes[i])) } };
 
       let mongoJson = { data: [] };
       if (locCode === "all" || (!locCode && canSelectStore)) {
@@ -351,7 +351,7 @@ export default function IncomeExpenseReport() {
         const merged = mongoResults.flatMap(r => Array.isArray(r) ? r : (r?.data || []));
         mongoJson = { data: merged };
       } else {
-        const mongoRes  = await fetch(`${API}/user/Getpayment?LocCode=${locCode}&DateFrom=${fromDate}&DateTo=${toDate}`);
+        const mongoRes = await fetch(`${API}/user/Getpayment?LocCode=${locCode}&DateFrom=${fromDate}&DateTo=${toDate}`);
         mongoJson = mongoRes.ok ? await mongoRes.json() : {};
       }
 
@@ -363,9 +363,9 @@ export default function IncomeExpenseReport() {
         category: "Booking",
         subCategory: "Advance",
         cash: Number(item.bookingCashAmount || 0),
-        rbl:  Number(item.rblRazorPay || 0),
+        rbl: Number(item.rblRazorPay || 0),
         bank: Number(item.bookingBankAmount || 0),
-        upi:  Number(item.bookingUPIAmount || 0),
+        upi: Number(item.bookingUPIAmount || 0),
         locCode: item.locCode || locCode,
       }));
 
@@ -374,14 +374,14 @@ export default function IncomeExpenseReport() {
       const returnableList = [];
 
       (rentoutData?.dataSet?.data || []).forEach(item => {
-        const security       = Number(item.securityAmount || 0);
-        const advance        = Number(item.advanceAmount || 0);
+        const security = Number(item.securityAmount || 0);
+        const advance = Number(item.advanceAmount || 0);
         const balancePayable = Number(item.invoiceAmount || 0) - advance;
-        const cash  = Number(item.rentoutCashAmount || 0);
-        const rbl   = Number(item.rblRazorPay || 0);
-        const bank  = Number(item.rentoutBankAmount || 0);
-        const upi   = Number(item.rentoutUPIAmount || 0);
-        const base  = {
+        const cash = Number(item.rentoutCashAmount || 0);
+        const rbl = Number(item.rblRazorPay || 0);
+        const bank = Number(item.rentoutBankAmount || 0);
+        const upi = Number(item.rentoutUPIAmount || 0);
+        const base = {
           date: (item.rentOutDate || "").split("T")[0],
           invoiceNo: item.invoiceNo,
           customerName: item.customerName || "",
@@ -422,7 +422,7 @@ export default function IncomeExpenseReport() {
           cash: -Math.abs(Number(item.returnCashAmount || 0)),
           rbl,
           bank: rbl !== 0 ? 0 : -Math.abs(Number(item.returnBankAmount || 0)),
-          upi:  rbl !== 0 ? 0 : -Math.abs(Number(item.returnUPIAmount || 0)),
+          upi: rbl !== 0 ? 0 : -Math.abs(Number(item.returnUPIAmount || 0)),
           locCode: item.locCode || locCode,
         };
       });
@@ -439,7 +439,7 @@ export default function IncomeExpenseReport() {
           cash: -Math.abs(Number(item.deleteCashAmount || 0)),
           rbl,
           bank: rbl !== 0 ? 0 : -Math.abs(Number(item.deleteBankAmount || 0)),
-          upi:  rbl !== 0 ? 0 : -Math.abs(Number(item.deleteUPIAmount || 0)),
+          upi: rbl !== 0 ? 0 : -Math.abs(Number(item.deleteUPIAmount || 0)),
           locCode: item.locCode || locCode,
         };
       });
@@ -453,7 +453,7 @@ export default function IncomeExpenseReport() {
       const mongoHoldedSecurity = [];
 
       mongoTxns.forEach(t => {
-        const tp  = (t.type || "").toLowerCase();
+        const tp = (t.type || "").toLowerCase();
         const sub = (t.subCategory || "").toLowerCase().trim();
         const cat = (t.category || "").toLowerCase().trim();
         const inv = (t.invoiceNo || "").toUpperCase();
@@ -471,7 +471,7 @@ export default function IncomeExpenseReport() {
 
         const isBankToCash = cat === "bank to cash" || sub === "bank to cash" || cat.includes("bank to cash") || sub.includes("bank to cash") || cat.includes("cash to branch") || sub.includes("cash to branch");
         const isCashToBank = !isBankToCash && (cat === "bulk amount transfer" || cat === "cash to bank" || sub === "bulk amount transfer" || sub === "cash to bank" || tp === "money transfer");
-        
+
         const isExpenseCategory = tp === "expense" || isDirectOrIndirect || EXPENSE_CATEGORIES.has(cat);
         const isActualExpense = isExpenseCategory || isReturnInvoice;
 
@@ -482,34 +482,34 @@ export default function IncomeExpenseReport() {
           return; // Skip admin level expenses for non-admins
         }
 
-        const normalizedCategory = (isShoeOrShirtSale && isActualExpense) 
+        const normalizedCategory = (isShoeOrShirtSale && isActualExpense)
           ? "Sales Return"
-          : isShoeOrShirtSale 
-            ? "Sales" 
-            : isSalesReturn 
-              ? "Sales Return" 
-              : isReturnInvoice 
-                ? "Return Invoice" 
-                : isBankToCash 
-                  ? "Bank to Cash" 
-                  : isCashToBank 
-                    ? "Cash to Bank" 
+          : isShoeOrShirtSale
+            ? "Sales"
+            : isSalesReturn
+              ? "Sales Return"
+              : isReturnInvoice
+                ? "Return Invoice"
+                : isBankToCash
+                  ? "Bank to Cash"
+                  : isCashToBank
+                    ? "Cash to Bank"
                     : (t.category || "Uncategorized");
 
         let normalizedSubCategory = (isShoeOrShirtSale && isActualExpense)
-          ? ((sub === "shoe sales" || cat === "shoe sales") ? "Shoe Sales Return" 
-             : (sub === "shirt sales" || cat === "shirt sales") ? "Shirt Sales Return" 
-             : "Mixed Sales Return")
-          : isShoeOrShirtSale 
-            ? (t.subCategory || t.category || "Sales") 
-            : isSalesReturn 
-              ? (t.subCategory || t.category || "Sales Return") 
-              : isReturnInvoice 
-                ? (t.subCategory || "Sales Return") 
-                : isBankToCash 
-                  ? "Bank to Cash" 
-                  : isCashToBank 
-                    ? "Cash to Bank" 
+          ? ((sub === "shoe sales" || cat === "shoe sales") ? "Shoe Sales Return"
+            : (sub === "shirt sales" || cat === "shirt sales") ? "Shirt Sales Return"
+              : "Mixed Sales Return")
+          : isShoeOrShirtSale
+            ? (t.subCategory || t.category || "Sales")
+            : isSalesReturn
+              ? (t.subCategory || t.category || "Sales Return")
+              : isReturnInvoice
+                ? (t.subCategory || "Sales Return")
+                : isBankToCash
+                  ? "Bank to Cash"
+                  : isCashToBank
+                    ? "Cash to Bank"
                     : (t.subCategory || t.category || "");
 
         const originalSubCategory = normalizedSubCategory;
@@ -527,9 +527,9 @@ export default function IncomeExpenseReport() {
           originalSubCategory: originalSubCategory,
           remark: t.remark || t.remarks || "",
           cash: Number(t.cash || 0),
-          rbl:  Number(t.rbl || t.rblRazorPay || 0),
+          rbl: Number(t.rbl || t.rblRazorPay || 0),
           bank: Number(t.bank || 0),
-          upi:  Number(t.upi || 0),
+          upi: Number(t.upi || 0),
           locCode: t.locCode || locCode,
           _id: t._id,
         };
@@ -585,19 +585,19 @@ export default function IncomeExpenseReport() {
         map[cat].cash += t.amount || 0;
       } else {
         subG.cash += t.cash || 0;
-        subG.rbl  += t.rbl  || 0;
+        subG.rbl += t.rbl || 0;
         subG.bank += t.bank || 0;
-        subG.upi  += t.upi  || 0;
+        subG.upi += t.upi || 0;
         map[cat].cash += t.cash || 0;
-        map[cat].rbl  += t.rbl  || 0;
+        map[cat].rbl += t.rbl || 0;
         map[cat].bank += t.bank || 0;
-        map[cat].upi  += t.upi  || 0;
+        map[cat].upi += t.upi || 0;
       }
     });
     return map;
   };
 
-  const incomeGrouped  = useMemo(() => buildGrouped(incomeRows), [incomeRows, filterCategories]);
+  const incomeGrouped = useMemo(() => buildGrouped(incomeRows), [incomeRows, filterCategories]);
   const returnableIncomeGrouped = useMemo(() => buildGrouped(returnableIncomeRows), [returnableIncomeRows, filterCategories]);
   const expenseGrouped = useMemo(() => buildGrouped(expenseRows), [expenseRows, filterCategories]);
   const holdedSecRefundGrouped = useMemo(() => buildGrouped(holdedSecurityRefundRows), [holdedSecurityRefundRows, filterCategories]);
@@ -617,9 +617,9 @@ export default function IncomeExpenseReport() {
   const cashToBankTotals = sumGroup(cashToBankGrouped);
   const bankToCashTotals = sumGroup(bankToCashGrouped);
 
-  const incTotal  = incTotals.cash + incTotals.rbl + incTotals.bank + incTotals.upi;
-  const retTotal  = retTotals.cash + retTotals.rbl + retTotals.bank + retTotals.upi;
-  const expTotal  = expTotals.cash + expTotals.rbl + expTotals.bank + expTotals.upi;
+  const incTotal = incTotals.cash + incTotals.rbl + incTotals.bank + incTotals.upi;
+  const retTotal = retTotals.cash + retTotals.rbl + retTotals.bank + retTotals.upi;
+  const expTotal = expTotals.cash + expTotals.rbl + expTotals.bank + expTotals.upi;
   const holdedSecTotal = holdedSecTotals.cash + holdedSecTotals.rbl + holdedSecTotals.bank + holdedSecTotals.upi;
   const cashToBankTotal = cashToBankTotals.cash + cashToBankTotals.rbl + cashToBankTotals.bank + cashToBankTotals.upi;
   const bankToCashTotal = bankToCashTotals.cash + bankToCashTotals.rbl + bankToCashTotals.bank + bankToCashTotals.upi;
@@ -657,17 +657,17 @@ export default function IncomeExpenseReport() {
   const grandTotalExpense = expTotal + holdedSecTotal + cashToBankTotal;
 
   // 1. Top Card: Net Difference between Income TOTAL (incTotals) and Expense TOTAL (expTotals)
-  const topNetCash   = incTotals.cash + expTotals.cash;
-  const topNetRbl    = incTotals.rbl  + expTotals.rbl;
-  const topNetBank   = incTotals.bank + expTotals.bank;
-  const topNetUpi    = incTotals.upi  + expTotals.upi;
-  const topNetTotal  = incTotal + expTotal;
+  const topNetCash = incTotals.cash + expTotals.cash;
+  const topNetRbl = incTotals.rbl + expTotals.rbl;
+  const topNetBank = incTotals.bank + expTotals.bank;
+  const topNetUpi = incTotals.upi + expTotals.upi;
+  const topNetTotal = incTotal + expTotal;
 
   // 2. Table Footer: Net Difference Total between TOTAL INCOME (grandTotalIncome) and TOTAL EXPENSES (grandTotalExpense)
-  const tableNetCash  = grandTotalIncomeTotals.cash + grandTotalExpenseTotals.cash;
-  const tableNetRbl   = grandTotalIncomeTotals.rbl  + grandTotalExpenseTotals.rbl;
-  const tableNetBank  = grandTotalIncomeTotals.bank + grandTotalExpenseTotals.bank;
-  const tableNetUpi   = grandTotalIncomeTotals.upi  + grandTotalExpenseTotals.upi;
+  const tableNetCash = grandTotalIncomeTotals.cash + grandTotalExpenseTotals.cash;
+  const tableNetRbl = grandTotalIncomeTotals.rbl + grandTotalExpenseTotals.rbl;
+  const tableNetBank = grandTotalIncomeTotals.bank + grandTotalExpenseTotals.bank;
+  const tableNetUpi = grandTotalIncomeTotals.upi + grandTotalExpenseTotals.upi;
   const tableNetTotal = grandTotalIncome + grandTotalExpense;
 
   const allCategories = useMemo(() => {
@@ -679,7 +679,7 @@ export default function IncomeExpenseReport() {
       ...cashToBankRows,
       ...bankToCashRows
     ].map(t => getCategoryLabel(t.category || "Uncategorized")))];
-    
+
     // If no data fetched yet, use predefined categories
     if (fromRows.length === 0) {
       return [
@@ -696,11 +696,11 @@ export default function IncomeExpenseReport() {
         "Dry Cleaning"
       ];
     }
-    
+
     return fromRows;
   }, [incomeRows, returnableIncomeRows, expenseRows, holdedSecurityRefundRows, cashToBankRows, bankToCashRows]);
 
-  const toggleExpand  = (key) => setExpanded(p => ({ ...p, [key]: !p[key] }));
+  const toggleExpand = (key) => setExpanded(p => ({ ...p, [key]: !p[key] }));
 
   const getBranchName = (lc) => {
     const store = STORE_LIST.find(s => s.locCode === String(lc) || s.locName.toLowerCase() === String(lc).toLowerCase());
@@ -714,7 +714,7 @@ export default function IncomeExpenseReport() {
   const csvData = useMemo(() => {
     const rows = [];
     rows.push(["Section", "Date", "Category", "Customer / Invoice", "Remarks", "Branch", "Cash", "Razorpay", "Bank", "UPI", "Total"]);
-    
+
     // 1. Income
     Object.keys(incomeGrouped).forEach(cat => {
       const g = incomeGrouped[cat];
@@ -1097,9 +1097,9 @@ export default function IncomeExpenseReport() {
         b.cash += t.amount || 0;
       } else {
         b.cash += t.cash || 0;
-        b.rbl  += t.rbl  || 0;
+        b.rbl += t.rbl || 0;
         b.bank += t.bank || 0;
-        b.upi  += t.upi  || 0;
+        b.upi += t.upi || 0;
       }
     });
 
@@ -1123,9 +1123,9 @@ export default function IncomeExpenseReport() {
       const isIncomeGroup = typeLabel === "INCOME" || typeLabel === "RETURNABLE" || typeLabel === "BANK_CASH";
       const isExpenseGroup = typeLabel === "EXPENSE" || typeLabel === "HOLDED_SEC" || typeLabel === "CASH_BANK";
 
-      const headerBg = isIncomeGroup ? "bg-[#e8fce8] hover:bg-[#dcf5dc] text-gray-900 border-[#dcf5dc]" 
-                     : isExpenseGroup ? "bg-[#ffeae8] hover:bg-[#ffdad8] text-gray-900 border-[#ffdad8]" 
-                     : "bg-white hover:bg-gray-50 text-gray-900 border-gray-200";
+      const headerBg = isIncomeGroup ? "bg-[#e8fce8] hover:bg-[#dcf5dc] text-gray-900 border-[#dcf5dc]"
+        : isExpenseGroup ? "bg-[#ffeae8] hover:bg-[#ffdad8] text-gray-900 border-[#ffdad8]"
+          : "bg-white hover:bg-gray-50 text-gray-900 border-gray-200";
 
       const textColor = "text-gray-900";
       const totalTextColor = "text-gray-900";
@@ -1137,7 +1137,7 @@ export default function IncomeExpenseReport() {
       return (
         <tbody key={catKey} className="border-b border-gray-100">
           {/* Category Header Row */}
-          <tr 
+          <tr
             className={`cursor-pointer transition-colors border-t ${headerBg}`}
             onClick={() => toggleExpand(catKey)}
           >
@@ -1149,10 +1149,10 @@ export default function IncomeExpenseReport() {
                 {getCategoryLabel(cat)}
               </span>
             </td>
-            <td className={`px-4 py-3 text-right text-xs font-semibold ${textColor}`}>{g.rbl  !== 0 ? signStr(g.rbl)  : "-"}</td>
+            <td className={`px-4 py-3 text-right text-xs font-semibold ${textColor}`}>{g.rbl !== 0 ? signStr(g.rbl) : "-"}</td>
             <td className={`px-4 py-3 text-right text-xs font-semibold ${textColor}`}>{g.cash !== 0 ? signStr(g.cash) : "-"}</td>
             <td className={`px-4 py-3 text-right text-xs font-semibold ${textColor}`}>{g.bank !== 0 ? signStr(g.bank) : "-"}</td>
-            <td className={`px-4 py-3 text-right text-xs font-semibold ${textColor}`}>{g.upi  !== 0 ? signStr(g.upi)  : "-"}</td>
+            <td className={`px-4 py-3 text-right text-xs font-semibold ${textColor}`}>{g.upi !== 0 ? signStr(g.upi) : "-"}</td>
             <td className={`px-4 py-3 text-right text-sm font-bold ${totalTextColor}`}>
               {fmt(Math.abs(catTotal))}
             </td>
@@ -1172,7 +1172,7 @@ export default function IncomeExpenseReport() {
 
                   return (
                     <React.Fragment key={subKey}>
-                      <tr 
+                      <tr
                         className="cursor-pointer transition-colors bg-gray-50/50 hover:bg-gray-100 border-t border-gray-100"
                         onClick={() => toggleExpand(subKey)}
                       >
@@ -1189,7 +1189,7 @@ export default function IncomeExpenseReport() {
                         <td className="px-4 py-2.5 text-right text-xs font-bold text-gray-700">{fmt(Math.abs(subTotal))}</td>
                         <td className="px-4 py-2.5"></td>
                       </tr>
-                      
+
                       {isSubExp && (
                         showBranch && subBranchGroups.length > 1 ? (
                           subBranchGroups.map(bg => {
@@ -1291,13 +1291,13 @@ export default function IncomeExpenseReport() {
         <title>Income &amp; Expenses Report | RootFin</title>
       </Helmet>
       <Headers />
-      
+
       <div className={`transition-all duration-300 p-3 sm:p-6 bg-[#fbfcfd] min-h-screen ${isSidebarOpen ? 'lg:ml-64 ml-0' : 'ml-0'}`}>
         {/* Page Title & Header */}
         <div style={{ marginBottom: "24px" }}>
-          <h1 style={{ 
-            fontSize: "24px", 
-            fontWeight: "700", 
+          <h1 style={{
+            fontSize: "24px",
+            fontWeight: "700",
             color: "#1e293b",
             textTransform: "uppercase",
             letterSpacing: "0.5px",
@@ -1392,7 +1392,7 @@ export default function IncomeExpenseReport() {
                   {(isAdmin || isSuperAdmin || isFinancialHead) && (
                     <option value="all_depts">All Departments</option>
                   )}
-                  
+
                   <optgroup label="Stores">
                     {(isClusterManager
                       ? STORE_LIST.filter((s) => clusterAllowedLocCodes.includes(s.locCode) && !DEPT_LOC_CODES.includes(s.locCode))
@@ -1693,10 +1693,10 @@ export default function IncomeExpenseReport() {
                       <td colSpan={showBranch ? 5 : 4} className="px-4 py-3 text-right text-sm font-bold text-white">
                         TOTAL
                       </td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{incTotals.rbl  !== 0 ? fmt(Math.abs(incTotals.rbl))  : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{incTotals.rbl !== 0 ? fmt(Math.abs(incTotals.rbl)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{incTotals.cash !== 0 ? fmt(Math.abs(incTotals.cash)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{incTotals.bank !== 0 ? fmt(Math.abs(incTotals.bank)) : "-"}</td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{incTotals.upi  !== 0 ? fmt(Math.abs(incTotals.upi))  : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{incTotals.upi !== 0 ? fmt(Math.abs(incTotals.upi)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-sm font-bold text-white font-mono">{fmt(Math.abs(incTotal))}</td>
                       <td className="px-4 py-3"></td>
                     </tr>
@@ -1713,10 +1713,10 @@ export default function IncomeExpenseReport() {
                       <td colSpan={showBranch ? 5 : 4} className="px-4 py-3 text-right text-sm font-bold text-white">
                         TOTAL
                       </td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{retAndBankCashTotals.rbl  !== 0 ? fmt(Math.abs(retAndBankCashTotals.rbl))  : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{retAndBankCashTotals.rbl !== 0 ? fmt(Math.abs(retAndBankCashTotals.rbl)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{retAndBankCashTotals.cash !== 0 ? fmt(Math.abs(retAndBankCashTotals.cash)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{retAndBankCashTotals.bank !== 0 ? fmt(Math.abs(retAndBankCashTotals.bank)) : "-"}</td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{retAndBankCashTotals.upi  !== 0 ? fmt(Math.abs(retAndBankCashTotals.upi))  : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{retAndBankCashTotals.upi !== 0 ? fmt(Math.abs(retAndBankCashTotals.upi)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-sm font-bold text-white font-mono">{fmt(Math.abs(retAndBankCashTotal))}</td>
                       <td className="px-4 py-3"></td>
                     </tr>
@@ -1724,10 +1724,10 @@ export default function IncomeExpenseReport() {
                       <td colSpan={showBranch ? 5 : 4} className="px-4 py-3 text-right text-sm font-bold text-white">
                         TOTAL INCOME
                       </td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalIncomeTotals.rbl  !== 0 ? fmt(Math.abs(grandTotalIncomeTotals.rbl))  : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalIncomeTotals.rbl !== 0 ? fmt(Math.abs(grandTotalIncomeTotals.rbl)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalIncomeTotals.cash !== 0 ? fmt(Math.abs(grandTotalIncomeTotals.cash)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalIncomeTotals.bank !== 0 ? fmt(Math.abs(grandTotalIncomeTotals.bank)) : "-"}</td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalIncomeTotals.upi  !== 0 ? fmt(Math.abs(grandTotalIncomeTotals.upi))  : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalIncomeTotals.upi !== 0 ? fmt(Math.abs(grandTotalIncomeTotals.upi)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-sm font-bold text-white font-mono">{fmt(Math.abs(grandTotalIncome))}</td>
                       <td className="px-4 py-3"></td>
                     </tr>
@@ -1758,10 +1758,10 @@ export default function IncomeExpenseReport() {
                       <td colSpan={showBranch ? 5 : 4} className="px-4 py-3 text-right text-sm font-bold text-white">
                         TOTAL
                       </td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{expTotals.rbl  !== 0 ? fmt(Math.abs(expTotals.rbl)) : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{expTotals.rbl !== 0 ? fmt(Math.abs(expTotals.rbl)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{expTotals.cash !== 0 ? fmt(Math.abs(expTotals.cash)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{expTotals.bank !== 0 ? fmt(Math.abs(expTotals.bank)) : "-"}</td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{expTotals.upi  !== 0 ? fmt(Math.abs(expTotals.upi)) : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{expTotals.upi !== 0 ? fmt(Math.abs(expTotals.upi)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-sm font-bold text-white font-mono">{expTotal !== 0 ? fmt(Math.abs(expTotal)) : "-"}</td>
                       <td className="px-4 py-3"></td>
                     </tr>
@@ -1778,10 +1778,10 @@ export default function IncomeExpenseReport() {
                       <td colSpan={showBranch ? 5 : 4} className="px-4 py-3 text-right text-sm font-bold text-white">
                         TOTAL
                       </td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{holdedAndCashBankTotals.rbl  !== 0 ? fmt(Math.abs(holdedAndCashBankTotals.rbl))  : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{holdedAndCashBankTotals.rbl !== 0 ? fmt(Math.abs(holdedAndCashBankTotals.rbl)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{holdedAndCashBankTotals.cash !== 0 ? fmt(Math.abs(holdedAndCashBankTotals.cash)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{holdedAndCashBankTotals.bank !== 0 ? fmt(Math.abs(holdedAndCashBankTotals.bank)) : "-"}</td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{holdedAndCashBankTotals.upi  !== 0 ? fmt(Math.abs(holdedAndCashBankTotals.upi))  : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{holdedAndCashBankTotals.upi !== 0 ? fmt(Math.abs(holdedAndCashBankTotals.upi)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-sm font-bold text-white font-mono">{fmt(Math.abs(holdedAndCashBankTotal))}</td>
                       <td className="px-4 py-3"></td>
                     </tr>
@@ -1789,10 +1789,10 @@ export default function IncomeExpenseReport() {
                       <td colSpan={showBranch ? 5 : 4} className="px-4 py-3 text-right text-sm font-bold text-white">
                         TOTAL EXPENSES
                       </td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalExpenseTotals.rbl  !== 0 ? fmt(Math.abs(grandTotalExpenseTotals.rbl))  : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalExpenseTotals.rbl !== 0 ? fmt(Math.abs(grandTotalExpenseTotals.rbl)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalExpenseTotals.cash !== 0 ? fmt(Math.abs(grandTotalExpenseTotals.cash)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalExpenseTotals.bank !== 0 ? fmt(Math.abs(grandTotalExpenseTotals.bank)) : "-"}</td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalExpenseTotals.upi  !== 0 ? fmt(Math.abs(grandTotalExpenseTotals.upi))  : "-"}</td>
+                      <td className="px-4 py-3 text-right text-xs font-bold text-white font-mono">{grandTotalExpenseTotals.upi !== 0 ? fmt(Math.abs(grandTotalExpenseTotals.upi)) : "-"}</td>
                       <td className="px-4 py-3 text-right text-sm font-bold text-white font-mono">{fmt(Math.abs(grandTotalExpense))}</td>
                       <td className="px-4 py-3"></td>
                     </tr>
@@ -1804,10 +1804,10 @@ export default function IncomeExpenseReport() {
                       <td colSpan={showBranch ? 5 : 4} className="px-4 py-3.5 text-right text-sm font-black text-blue-950 uppercase tracking-wider">
                         Net Difference Total:
                       </td>
-                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{tableNetRbl  !== 0 ? fmt(tableNetRbl)  : "-"}</td>
+                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{tableNetRbl !== 0 ? fmt(tableNetRbl) : "-"}</td>
                       <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{tableNetCash !== 0 ? fmt(tableNetCash) : "-"}</td>
                       <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{tableNetBank !== 0 ? fmt(tableNetBank) : "-"}</td>
-                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{tableNetUpi  !== 0 ? fmt(tableNetUpi)  : "-"}</td>
+                      <td className="px-4 py-3.5 text-right text-xs font-bold text-gray-900 font-mono">{tableNetUpi !== 0 ? fmt(tableNetUpi) : "-"}</td>
                       <td className={`px-4 py-3.5 text-right text-base font-black font-mono ${tableNetTotal >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
                         {tableNetTotal >= 0 ? fmt(tableNetTotal) : `-${fmt(Math.abs(tableNetTotal))}`}
                       </td>

@@ -214,12 +214,11 @@ const SearchableSelect = ({
 
 const DIRECT_EXPENSE_CATS = [
   { value: "Dry Cleaning Expense", label: "Dry Cleaning Expense" },
-  { value: "Alteration", label: "Alteration" },
+  { value: "Alteration Expense", label: "Alteration Expense" },
   { value: "Raw Materials And Consumables", label: "Raw Materials And Consumables" },
   { value: "Freight Charges", label: "Freight Charges" },
   { value: "Stitching expense", label: "Stitching expense" },
   { value: "Material/Dress Accessories", label: "Material/Dress Accessories" },
-  { value: "Alteration Expense", label: "Alteration Expense" },
 ];
 
 const INDIRECT_EXPENSE_CATS = [
@@ -229,6 +228,7 @@ const INDIRECT_EXPENSE_CATS = [
   { value: "Directors Travelling Expense", label: "Directors Travelling Expense" },
   { value: "IT related expenses", label: "IT related expenses" },
   { value: "Building Rent", label: "Building Rent" },
+  { value: "Vendor", label: "Vendor" },
   { value: "Repairs and Maintenance", label: "Repairs and Maintenance" },
   { value: "EPF Contribution-Employer", label: "EPF Contribution-Employer" },
   { value: "ESI Contribution-Employer", label: "ESI Contribution-Employer" },
@@ -340,9 +340,25 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const [subCategoriesList, setSubCategoriesList] = useState([]);
   const [isAddSubCatModalOpen, setIsAddSubCatModalOpen] = useState(false);
   const [subCatParentCategory, setSubCatParentCategory] = useState("");
-  const [newSubCatName, setNewSubCatName] = useState("");
+  const [subCatInputs, setSubCatInputs] = useState([""]);
   const [addingSubCat, setAddingSubCat] = useState(false);
   const [subCatModalError, setSubCatModalError] = useState("");
+
+  // Bank Accounts Management
+  const [bankAccountList, setBankAccountList] = useState(BANK_ACCOUNTS);
+  const [isAddBankModalOpen, setIsAddBankModalOpen] = useState(false);
+  const [newBankName, setNewBankName] = useState("");
+  const [addingBank, setAddingBank] = useState(false);
+  const [bankModalError, setBankModalError] = useState("");
+
+  // Vendors & Tenants States
+  const [vendorList, setVendorList] = useState([]);
+  const [tenantList, setTenantList] = useState([]);
+  const [selectedVendor, setSelectedVendor] = useState("");
+  const [selectedTenant, setSelectedTenant] = useState("");
+
+  const isBuildingRent = (category || "").toLowerCase() === "building rent";
+  const isVendor = (category || "").toLowerCase() === "vendor" || (category || "").toLowerCase() === "vendors";
 
   // Fetch custom categories on mount
   const fetchCustomCategories = async () => {
@@ -382,13 +398,60 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
     }
   };
 
+  // Fetch Vendors and Tenants
+  const fetchVendorsAndTenants = async () => {
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/purchase/vendors`);
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : data.data || [];
+        const formatted = list.map((v) => ({
+          value: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || v.companyName || "Unnamed Vendor",
+          label: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || v.companyName || "Unnamed Vendor",
+        }));
+        setVendorList(formatted);
+      }
+    } catch (err) {
+      console.warn("Could not fetch vendors from API, trying localStorage:", err);
+      try {
+        const saved = JSON.parse(localStorage.getItem("vendors") || "[]");
+        if (Array.isArray(saved) && saved.length > 0) {
+          setVendorList(saved.map((v) => ({
+            value: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || "Vendor",
+            label: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || "Vendor",
+          })));
+        }
+      } catch (e) {}
+    }
+  };
+
+  // Fetch Bank Accounts from backend
+  const fetchBankAccounts = async () => {
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/bank-accounts`);
+      if (res.ok) {
+        const json = await res.json();
+        const list = json.data || [];
+        if (list.length > 0) {
+          setBankAccountList(list.map((b) => ({ value: b.name, label: b.name })));
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch bank accounts, using fallback defaults:", err);
+    }
+  };
+
   useEffect(() => {
     fetchCustomCategories();
+    fetchVendorsAndTenants();
+    fetchBankAccounts();
   }, []);
 
   useEffect(() => {
     fetchSubCategories();
     setSubCategory("");
+    setSelectedVendor("");
+    setSelectedTenant("");
   }, [category, expenseType]);
 
   const handleAddCategorySubmit = async (e) => {
@@ -431,15 +494,19 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const handleAddSubCategorySubmit = async (e) => {
     if (e) e.preventDefault();
     setSubCatModalError("");
-    const trimmedSub = newSubCatName.trim();
     const targetParentCat = subCatParentCategory.trim() || category.trim();
 
     if (!targetParentCat) {
       setSubCatModalError("Please select a parent Category.");
       return;
     }
-    if (!trimmedSub) {
-      setSubCatModalError("Subcategory name cannot be empty.");
+
+    const cleanNames = subCatInputs
+      .map((name) => (name || "").trim())
+      .filter((name) => name.length > 0);
+
+    if (cleanNames.length === 0) {
+      setSubCatModalError("Please enter at least one subcategory name.");
       return;
     }
 
@@ -449,7 +516,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: trimmedSub,
+          names: cleanNames,
           category: targetParentCat,
           expenseType: expenseType,
           createdBy: currentusers.name || currentusers.username || (isSuperAdmin ? "SuperAdmin" : "FinancialHead"),
@@ -457,24 +524,82 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
       });
       const json = await res.json();
       if (!res.ok) {
-        setSubCatModalError(json.message || "Failed to add subcategory.");
+        setSubCatModalError(json.message || "Failed to add subcategories.");
       } else {
         if (category !== targetParentCat) {
           setCategory(targetParentCat);
         }
         await fetchSubCategories();
-        setSubCategory(trimmedSub);
-        setNewSubCatName("");
+        if (cleanNames.length > 0) {
+          setSubCategory(cleanNames[0]);
+        }
+        setSubCatInputs([""]);
         setIsAddSubCatModalOpen(false);
       }
     } catch (err) {
-      console.error("Error adding subcategory:", err);
-      setSubCatModalError("Network error: Could not add subcategory.");
+      console.error("Error adding subcategories:", err);
+      setSubCatModalError("Network error: Could not add subcategories.");
     } finally {
       setAddingSubCat(false);
     }
   };
+
+  const handleSubCatInputChange = (index, value) => {
+    setSubCatInputs((prev) => {
+      const copy = [...prev];
+      copy[index] = value;
+      return copy;
+    });
+  };
+
+  const handleAddSubCatField = () => {
+    setSubCatInputs((prev) => [...prev, ""]);
+  };
+
+  const handleRemoveSubCatField = (index) => {
+    if (subCatInputs.length <= 1) {
+      setSubCatInputs([""]);
+      return;
+    }
+    setSubCatInputs((prev) => prev.filter((_, i) => i !== index));
+  };
   
+  const handleAddBankSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setBankModalError("");
+    const trimmed = newBankName.trim();
+    if (!trimmed) {
+      setBankModalError("Bank account name cannot be empty.");
+      return;
+    }
+
+    setAddingBank(true);
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/bank-accounts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: trimmed,
+          createdBy: currentusers.name || currentusers.username || (isSuperAdmin ? "SuperAdmin" : "FinancialHead"),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setBankModalError(json.message || "Failed to add bank account.");
+      } else {
+        await fetchBankAccounts();
+        setBankAccount(trimmed);
+        setNewBankName("");
+        setIsAddBankModalOpen(false);
+      }
+    } catch (err) {
+      console.error("Error adding bank account:", err);
+      setBankModalError("Network error: Could not add bank account.");
+    } finally {
+      setAddingBank(false);
+    }
+  };
+
   // Payment Method States
   const [paymentMethod, setPaymentMethod] = useState("bank");
   const [splitPayment, setSplitPayment] = useState(false);
@@ -631,12 +756,14 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
 
     setIsSubmitting(true);
 
+    const finalSubCategory = isBuildingRent ? selectedTenant : isVendor ? selectedVendor : subCategory;
+
     const payload = {
       type: "Expense",
       expenseType: expenseType, // "direct" | "indirect"
       category: category,
-      subCategory: subCategory.trim() || "",
-      remark: remarks.trim() ? `[${expenseType.toUpperCase()}] ${remarks.trim()}` : `[${expenseType.toUpperCase()}] ${category}${subCategory ? ` - ${subCategory}` : ""}`,
+      subCategory: finalSubCategory.trim() || "",
+      remark: remarks.trim() ? `[${expenseType.toUpperCase()}] ${remarks.trim()}` : `[${expenseType.toUpperCase()}] ${category}${finalSubCategory ? ` - ${finalSubCategory}` : ""}`,
       locCode: targetBranch,
       isAdminLevel: canSelectStore,
       amount: `-${amount}`,
@@ -803,42 +930,65 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
               </div>
             </div>
 
-            {/* Sub Category */}
+            {/* Sub Category / Select Tenants / Select Vendors */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 tracking-wide mb-2 uppercase">
-                Sub Category
+                {isBuildingRent ? "Select Tenants" : isVendor ? "Select Vendors" : "Sub Category"}
               </label>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 min-w-0">
-                  <SearchableSelect
-                    value={subCategory}
-                    onChange={(val) => setSubCategory(val)}
-                    options={subCategoriesList}
-                    placeholder={category ? (subCategoriesList.length > 0 ? "Select Sub Category" : "No subcategories (optional)") : "Select category first"}
-                    searchPlaceholder="Search subcategory..."
-                    icon={Layers}
-                  />
+              {isBuildingRent ? (
+                <SearchableSelect
+                  value={selectedTenant}
+                  onChange={(val) => setSelectedTenant(val)}
+                  options={fallbackLocations.map((loc) => ({
+                    value: loc.locName,
+                    label: loc.locName,
+                  }))}
+                  placeholder="Select Tenant"
+                  searchPlaceholder="Search tenant..."
+                  icon={Building2}
+                />
+              ) : isVendor ? (
+                <SearchableSelect
+                  value={selectedVendor}
+                  onChange={(val) => setSelectedVendor(val)}
+                  options={vendorList}
+                  placeholder="Select Vendor"
+                  searchPlaceholder="Search vendor..."
+                  icon={Building2}
+                />
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <SearchableSelect
+                      value={subCategory}
+                      onChange={(val) => setSubCategory(val)}
+                      options={subCategoriesList}
+                      placeholder={category ? (subCategoriesList.length > 0 ? "Select Sub Category" : "No subcategories (optional)") : "Select category first"}
+                      searchPlaceholder="Search subcategory..."
+                      icon={Layers}
+                    />
+                  </div>
+                  {canManageCategories && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSubCatModalError("");
+                        setSubCatInputs([""]);
+                        setSubCatParentCategory(category || "");
+                        setIsAddSubCatModalOpen(true);
+                      }}
+                      className="w-10 h-10 rounded-full bg-[#8A2BE2] hover:bg-[#7822c9] text-white p-0 shrink-0 shadow-md hover:shadow-lg transition-all cursor-pointer group hover:scale-105 active:scale-95"
+                      style={{
+                        display: "grid",
+                        placeItems: "center",
+                      }}
+                      title={`Add subcategory for ${category || `${expenseType} category`}`}
+                    >
+                      <Plus size={22} strokeWidth={2.7} className="m-auto block" />
+                    </button>
+                  )}
                 </div>
-                {canManageCategories && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSubCatModalError("");
-                      setNewSubCatName("");
-                      setSubCatParentCategory(category || "");
-                      setIsAddSubCatModalOpen(true);
-                    }}
-                    className="w-10 h-10 rounded-full bg-[#8A2BE2] hover:bg-[#7822c9] text-white p-0 shrink-0 shadow-md hover:shadow-lg transition-all cursor-pointer group hover:scale-105 active:scale-95"
-                    style={{
-                      display: "grid",
-                      placeItems: "center",
-                    }}
-                    title={`Add subcategory for ${category || `${expenseType} category`}`}
-                  >
-                    <Plus size={22} strokeWidth={2.7} className="m-auto block" />
-                  </button>
-                )}
-              </div>
+              )}
             </div>
 
             {/* Branch */}
@@ -946,18 +1096,40 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
 
             {/* Bank Account Dropdown - shown when Bank is selected or in Split Payment */}
             {(paymentMethod === "bank" || splitPayment) && (
-              <div className="mt-4 max-w-xs">
+              <div className="mt-4 max-w-sm">
                 <label className="block text-xs font-semibold text-gray-700 tracking-wide mb-2 uppercase">
                   Bank Account <span className="text-red-500 font-bold">*</span>
                 </label>
-                <SearchableSelect
-                  value={bankAccount}
-                  onChange={(val) => setBankAccount(val)}
-                  options={BANK_ACCOUNTS}
-                  placeholder="Select Bank Account"
-                  searchPlaceholder="Search bank account..."
-                  icon={BsBank2}
-                />
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <SearchableSelect
+                      value={bankAccount}
+                      onChange={(val) => setBankAccount(val)}
+                      options={bankAccountList}
+                      placeholder="Select Bank Account"
+                      searchPlaceholder="Search bank account..."
+                      icon={BsBank2}
+                    />
+                  </div>
+                  {canManageCategories && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBankModalError("");
+                        setNewBankName("");
+                        setIsAddBankModalOpen(true);
+                      }}
+                      className="w-10 h-10 rounded-full bg-[#8A2BE2] hover:bg-[#7822c9] text-white p-0 shrink-0 shadow-md hover:shadow-lg transition-all cursor-pointer group hover:scale-105 active:scale-95"
+                      style={{
+                        display: "grid",
+                        placeItems: "center",
+                      }}
+                      title="Add new bank account"
+                    >
+                      <Plus size={22} strokeWidth={2.7} className="m-auto block" />
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1238,19 +1410,53 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
                   </p>
                 </div>
 
-                {/* Subcategory Name */}
+                {/* Multiple Subcategories List */}
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">
-                    Sub Category Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    autoFocus
-                    placeholder="e.g. Courier charges - DHL, Fiber Net..."
-                    value={newSubCatName}
-                    onChange={(e) => setNewSubCatName(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#9B48D7] focus:ring-4 focus:ring-purple-500/10"
-                  />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600">
+                      Sub Categories <span className="text-red-500">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleAddSubCatField}
+                      className="w-6 h-6 rounded-full bg-[#8A2BE2] hover:bg-[#7822c9] text-white p-0 shadow-xs hover:shadow-sm transition-all cursor-pointer group hover:scale-105 active:scale-95"
+                      style={{
+                        display: "grid",
+                        placeItems: "center",
+                      }}
+                      title="Add another subcategory"
+                    >
+                      <Plus size={14} strokeWidth={2.8} className="m-auto block" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                    {subCatInputs.map((val, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          autoFocus={idx === 0}
+                          placeholder={`e.g. Subcategory ${idx + 1}`}
+                          value={val}
+                          onChange={(e) => handleSubCatInputChange(idx, e.target.value)}
+                          className="flex-1 rounded-xl border border-gray-200 px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#9B48D7] focus:ring-4 focus:ring-purple-500/10"
+                        />
+                        {subCatInputs.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSubCatField(idx)}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                            title="Remove"
+                          >
+                            <X size={15} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-[11px] text-gray-400">
+                    Click <strong>Add Another</strong> to enter multiple subcategories in one go.
+                  </p>
                 </div>
 
                 {subCatModalError && (
@@ -1270,10 +1476,79 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
                   </button>
                   <button
                     type="submit"
-                    disabled={addingSubCat || !newSubCatName.trim() || !subCatParentCategory}
+                    disabled={addingSubCat || !subCatParentCategory || subCatInputs.every((s) => !s.trim())}
                     className="rounded-xl bg-[#9B48D7] hover:bg-[#8B38C7] text-white px-5 py-2 text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
                   >
-                    {addingSubCat ? "Adding..." : "Add Sub Category"}
+                    {addingSubCat ? "Saving..." : "Save Sub Categories"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Add Bank Account Modal */}
+        {isAddBankModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-gray-100 scale-in-95 duration-150">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-7 h-7 rounded-full bg-[#8A2BE2] text-white"
+                    style={{ display: "grid", placeItems: "center" }}
+                  >
+                    <Plus size={16} strokeWidth={2.8} />
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900">Add New Bank Account</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddBankModalOpen(false)}
+                  className="rounded-lg p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddBankSubmit} className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">
+                    Bank Account Name / Details <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="e.g. HDFC Current A/C **1234, Federal Rootments..."
+                    value={newBankName}
+                    onChange={(e) => setNewBankName(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#9B48D7] focus:ring-4 focus:ring-purple-500/10"
+                  />
+                  <p className="mt-1 text-[11px] text-gray-400">
+                    This bank account will be saved and available in the bank account dropdown for direct and indirect expenses.
+                  </p>
+                </div>
+
+                {bankModalError && (
+                  <div className="rounded-xl bg-red-50 p-3 text-xs font-medium text-red-600 border border-red-200">
+                    {bankModalError}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddBankModalOpen(false)}
+                    disabled={addingBank}
+                    className="rounded-xl px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addingBank || !newBankName.trim()}
+                    className="rounded-xl bg-[#9B48D7] hover:bg-[#8B38C7] text-white px-5 py-2 text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {addingBank ? "Saving..." : "Save Bank Account"}
                   </button>
                 </div>
               </form>

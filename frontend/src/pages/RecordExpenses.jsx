@@ -453,8 +453,8 @@ const RecordExpenses = () => {
     "dry cleaning": "Dry Cleaning Expense",
     "dry cleaning expenses": "Dry Cleaning Expense",
     "dry cleaning expense": "Dry Cleaning Expense",
-    "altration": "Alteration",
-    "alteration": "Alteration",
+    "altration": "Alteration Expense",
+    "alteration": "Alteration Expense",
     "alteration expense": "Alteration Expense",
     "alteration expenses": "Alteration Expense",
     "raw materials and consumables": "Raw Materials And Consumables",
@@ -490,6 +490,7 @@ const RecordExpenses = () => {
   const csvHeaders = [
     { label: "Date", key: "date" },
     { label: "Expense Category", key: "category" },
+    { label: "Sub Category", key: "subCategory" },
     { label: "Branch", key: "branch" },
     { label: "Expense Type", key: "expenseType" },
     { label: "Payment Method", key: "paymentMethod" },
@@ -507,6 +508,7 @@ const RecordExpenses = () => {
       return {
         date: tx.date ? tx.date.split("T")[0] : "-",
         category: getCleanCategory(tx.category),
+        subCategory: tx.subCategory || "-",
         branch: getBranchName(tx.locCode),
         expenseType: isDirect ? "Direct" : "Indirect",
         paymentMethod: (tx.paymentMethod || "CASH").toUpperCase(),
@@ -691,6 +693,7 @@ const RecordExpenses = () => {
                 <tr className="bg-[#333333] text-white text-[11px] font-semibold tracking-wider uppercase">
                   <th className="py-3.5 px-5">Date</th>
                   <th className="py-3.5 px-5">Expense Category</th>
+                  <th className="py-3.5 px-5">Sub Category</th>
                   <th className="py-3.5 px-5">Branch</th>
                   <th className="py-3.5 px-5 text-center">Expense Type</th>
                   <th className="py-3.5 px-5">Attachment</th>
@@ -703,13 +706,13 @@ const RecordExpenses = () => {
               <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
                 {loading ? (
                   <tr>
-                    <td colSpan="9" className="py-12 text-center text-gray-400">
+                    <td colSpan="10" className="py-12 text-center text-gray-400">
                       Loading expense records...
                     </td>
                   </tr>
                 ) : filteredTransactions.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="py-12 text-center text-gray-400">
+                    <td colSpan="10" className="py-12 text-center text-gray-400">
                       No expense records found for the selected criteria.
                     </td>
                   </tr>
@@ -729,6 +732,17 @@ const RecordExpenses = () => {
                         {/* Category */}
                         <td className="py-4 px-5 font-medium text-gray-900">
                           {getCleanCategory(tx.category)}
+                        </td>
+
+                        {/* Sub Category */}
+                        <td className="py-4 px-5 text-gray-600 text-xs">
+                          {tx.subCategory && tx.subCategory.trim() ? (
+                            <span className="inline-block px-2.5 py-1 rounded-md bg-gray-100 text-gray-800 font-medium">
+                              {tx.subCategory}
+                            </span>
+                          ) : (
+                            <span className="text-gray-300">—</span>
+                          )}
                         </td>
 
                         {/* Branch */}
