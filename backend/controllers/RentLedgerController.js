@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import RentLedger from "../model/RentLedger.js";
 import { getLocationExpenses } from "../utils/locationExpenses.js";
 
@@ -7,6 +8,8 @@ export const createRentLedger = async (req, res) => {
       fromDate,
       toDate,
       date,
+      tenantId,
+      tenantName = "",
       storeName,
       locCode,
       debit = 0,
@@ -33,6 +36,8 @@ export const createRentLedger = async (req, res) => {
       fromDate: new Date(fromDate),
       toDate: new Date(toDate),
       date: entryDate,
+      tenantId: mongoose.Types.ObjectId.isValid(tenantId) ? tenantId : null,
+      tenantName: String(tenantName || "").trim(),
       storeName,
       locCode: locCode ? String(locCode) : "",
       debit: debitNum,

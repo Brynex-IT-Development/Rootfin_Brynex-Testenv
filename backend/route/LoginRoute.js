@@ -8,6 +8,7 @@ import CloseTransaction from '../model/Closing.js';
 import { propagateCashDiff } from '../utils/cashPropagation.js';
 import {DownloadAttachment} from "../controllers/TransactionController.js";
 import { createRentLedger, getRentLedgers, deleteRentLedger } from "../controllers/RentLedgerController.js";
+import { createTenant, getTenants } from "../controllers/TenantController.js";
 
 
 
@@ -408,6 +409,8 @@ router.get('/financialSummaryWithEdit', getFinancialSummaryWithEdit);
 router.post('/rent-ledgers', createRentLedger);
 router.get('/rent-ledgers', getRentLedgers);
 router.delete('/rent-ledgers/:id', deleteRentLedger);
+router.post('/rent-tenants', createTenant);
+router.get('/rent-tenants', getTenants);
 
 
 

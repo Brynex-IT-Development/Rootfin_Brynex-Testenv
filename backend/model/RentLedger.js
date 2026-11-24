@@ -14,6 +14,16 @@ const rentLedgerSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      default: null,
+    },
+    tenantName: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     storeName: {
       type: String,
       required: true,
