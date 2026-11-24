@@ -184,10 +184,7 @@ const RentLedgers = () => {
                       </td>
                       <td
                         className="py-4 px-6 font-medium text-gray-800"
-                        title={Object.entries(row.expenseBreakdown || {})
-                          .map(([cat, amt]) => `${cat}: ₹${formatCurrency(amt)}`)
-                          .concat(row.manualCredit ? [`Manual credit: ₹${formatCurrency(row.manualCredit)}`] : [])
-                          .join("\n") || undefined}
+                        title={`Building Rent paid: ${row.rentPaymentCount || 0} expense${row.rentPaymentCount === 1 ? "" : "s"} in Record Expense`}
                       >
                         {formatCurrency(row.credit)}
                       </td>

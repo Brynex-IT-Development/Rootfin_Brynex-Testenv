@@ -1,4 +1,5 @@
 // backend/cont/TransactionController.js
+import mongoose from "mongoose";
 import Transaction from "../model/Transaction.js";
 import SalesInvoice from "../model/SalesInvoice.js";
 import CloseTransaction from "../model/Closing.js";
@@ -116,6 +117,8 @@ export const CreatePayment = async (req, res) => {
       invoiceNo,        // may be omitted
       isSecurityReturn,
       isAdminLevel,
+      tenantId,         // Building Rent expenses: tenant from Rent Ledgers
+      tenantName,
       attachment        // 🔺 ADDED  (base-64 string from React)
     } = req.body;
 
@@ -179,6 +182,8 @@ export const CreatePayment = async (req, res) => {
       date,
       invoiceNo: finalInvoice,
       isAdminLevel,
+      tenantId: mongoose.isValidObjectId(tenantId) ? tenantId : null,
+      tenantName: tenantName ? String(tenantName).trim() : "",
       attachment: attachmentObj                     // 🔺 ADDED
     });
 

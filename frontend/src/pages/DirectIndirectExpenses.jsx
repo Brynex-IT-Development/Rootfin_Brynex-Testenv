@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import baseUrl from "../api/api";
 import { 
   ChevronDown, 
@@ -13,7 +13,8 @@ import {
   Layers, 
   Building2, 
   FileText,
-  Lock
+  Lock,
+  User
 } from "lucide-react";
 import { BsBank2 } from "react-icons/bs";
 import { MdCurrencyRupee } from "react-icons/md";
@@ -211,6 +212,10 @@ const SearchableSelect = ({
   );
 };
 
+// Category value of "Building Rent". Payments under it need a tenant and show
+// up as Credit in that tenant's Rent Ledger.
+const BUILDING_RENT_CATEGORY = "Rent";
+
 const DIRECT_EXPENSE_CATS = [
   { value: "Dry Cleaning", label: "Dry Cleaning" },
   { value: "Altration", label: "Altration" },
@@ -247,7 +252,8 @@ const INDIRECT_EXPENSE_CATS = [
   { value: "Printing & Stationary", label: "Printing & Stationary" },
   { value: "Staff Welfare", label: "Staff Welfare" },
   { value: "Staff Accommodation", label: "Staff Accommodation" },
-  { value: "Rent", label: "Rent" },
+  // Shown as "Building Rent"; still saved as "Rent" so old entries and reports match
+  { value: BUILDING_RENT_CATEGORY, label: "Building Rent" },
   { value: "Asset Purchase", label: "Asset Purchase" },
   { value: "Compensation", label: "Compensation" },
   { value: "Refund", label: "Refund" },
@@ -402,7 +408,13 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const [branch, setBranch] = useState(defaultStore);
   const [amount, setAmount] = useState("");
   const [remarks, setRemarks] = useState("");
-  
+
+  // Tenant (only for Building Rent) — tenants come from Ledgers → Rent Ledgers
+  const [tenantId, setTenantId] = useState("");
+  const [tenants, setTenants] = useState([]);
+  const [tenantsLoading, setTenantsLoading] = useState(false);
+  const isBuildingRent = category === BUILDING_RENT_CATEGORY;
+
   // Payment Method States
   const [paymentMethod, setPaymentMethod] = useState("bank");
   const [splitPayment, setSplitPayment] = useState(false);
@@ -429,6 +441,63 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   useEffect(() => {
     setCategory("");
   }, [expenseType]);
+
+  // Load tenants for the Building Rent tenant picker
+  useEffect(() => {
+    let cancelled = false;
+    const loadTenants = async () => {
+      setTenantsLoading(true);
+      try {
+        let res = await fetch(`${baseUrl.baseUrl}api/rent-tenants`);
+        if (res.status === 404) {
+          res = await fetch(`${baseUrl.baseUrl}user/rent-tenants`);
+        }
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!cancelled) setTenants(Array.isArray(json?.data) ? json.data : []);
+      } catch (err) {
+        console.warn("Could not load tenants:", err);
+      } finally {
+        if (!cancelled) setTenantsLoading(false);
+      }
+    };
+    loadTenants();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // A tenant only applies to Building Rent
+  useEffect(() => {
+    if (!isBuildingRent) setTenantId("");
+  }, [isBuildingRent]);
+
+  const currentBranch = canSelectStore ? branch : (currentusers.locCode || "759");
+  const branchTenants = currentBranch
+    ? tenants.filter((t) => String(t.locCode) === String(currentBranch))
+    : tenants;
+  const tenantOptions = branchTenants.map((t) => ({
+    value: t._id,
+    label: currentBranch || !t.storeName ? t.name : `${t.name} (${t.storeName})`,
+  }));
+  const selectedTenant = tenants.find((t) => t._id === tenantId);
+
+  const handleTenantChange = (val) => {
+    setTenantId(val);
+    const tenant = tenants.find((t) => t._id === val);
+    // Picking a tenant before a branch fills in the tenant's branch
+    if (tenant && canSelectStore && !branch && tenant.locCode) {
+      setBranch(String(tenant.locCode));
+    }
+  };
+
+  const handleBranchChange = (val) => {
+    setBranch(val);
+    // Clear a tenant that belongs to a different branch
+    if (selectedTenant && val && String(selectedTenant.locCode) !== String(val)) {
+      setTenantId("");
+    }
+  };
 
   // Drag & Drop handlers
   const handleDrag = (e) => {
@@ -523,6 +592,11 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
       return;
     }
 
+    if (isBuildingRent && !selectedTenant) {
+      setStatusMessage({ type: "error", text: "Please select a Tenant for Building Rent." });
+      return;
+    }
+
     if (!amount || parseFloat(amount) <= 0) {
       setStatusMessage({ type: "error", text: "Please enter a valid Amount." });
       return;
@@ -543,11 +617,18 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
 
     setIsSubmitting(true);
 
+    const categoryLabel = categories.find((c) => c.value === category)?.label || category;
+    const defaultRemark = isBuildingRent && selectedTenant
+      ? `${categoryLabel} - ${selectedTenant.name}`
+      : categoryLabel;
+
     const payload = {
       type: "Expense",
       expenseType: expenseType, // "direct" | "indirect"
       category: category,
-      remark: remarks.trim() ? `[${expenseType.toUpperCase()}] ${remarks.trim()}` : `[${expenseType.toUpperCase()}] ${category}`,
+      remark: remarks.trim() ? `[${expenseType.toUpperCase()}] ${remarks.trim()}` : `[${expenseType.toUpperCase()}] ${defaultRemark}`,
+      tenantId: isBuildingRent && selectedTenant ? selectedTenant._id : undefined,
+      tenantName: isBuildingRent && selectedTenant ? selectedTenant.name : undefined,
       locCode: targetBranch,
       isAdminLevel: canSelectStore,
       amount: `-${amount}`,
@@ -586,6 +667,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
 
   const handleCancel = () => {
     setCategory("");
+    setTenantId("");
     if (canSelectStore) setBranch("");
     setAmount("");
     setRemarks("");
@@ -699,7 +781,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
               </label>
               <SearchableSelect
                 value={branch || (canSelectStore ? "" : (currentusers.locCode || "759"))}
-                onChange={(val) => setBranch(val)}
+                onChange={handleBranchChange}
                 options={fallbackLocations.map((loc) => ({
                   value: loc.locCode,
                   label: loc.locName,
@@ -741,6 +823,38 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
             </div>
 
           </div>
+
+          {/* Tenant — only for Building Rent */}
+          {isBuildingRent && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 tracking-wide mb-2 uppercase">
+                  Tenant <span className="text-red-500 font-bold">*</span>
+                </label>
+                <SearchableSelect
+                  value={tenantId}
+                  onChange={handleTenantChange}
+                  options={tenantOptions}
+                  placeholder={tenantsLoading ? "Loading tenants..." : "Select Tenant"}
+                  searchPlaceholder="Search tenant..."
+                  disabled={tenantsLoading}
+                  icon={User}
+                />
+                {tenantsLoading ? null : tenantOptions.length === 0 ? (
+                  <p className="mt-1.5 text-[11px] text-amber-600">
+                    No tenants {currentBranch ? "for this branch " : ""}yet. Add one in{" "}
+                    <Link to="/ledgers/rent/new" className="font-semibold underline hover:text-amber-700">
+                      Ledgers → Rent Ledgers
+                    </Link>.
+                  </p>
+                ) : (
+                  <p className="mt-1.5 text-[11px] text-gray-400">
+                    This payment will show as Credit in the tenant&apos;s Rent Ledger.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Way of Payment */}
           <div className="pt-2">

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, X, ChevronDown, Plus, Search, Check, UserPlus, MapPin } from "lucide-react";
+import { ArrowLeft, X, ChevronDown, Plus, Search, Check, UserPlus, MapPin, Info } from "lucide-react";
 import baseUrl from "../api/api.js";
 import { useSidebar } from "../hooks/useSidebar.js";
 import useLedgerLocations from "../hooks/useLedgerLocations.js";
@@ -201,7 +201,6 @@ const AddRentLedger = () => {
   const [tenantId, setTenantId] = useState("");
   const [storeName, setStoreName] = useState("");
   const [debit, setDebit] = useState("");
-  const [credit, setCredit] = useState("");
 
   const [tenants, setTenants] = useState([]);
   const [tenantsLoading, setTenantsLoading] = useState(false);
@@ -360,7 +359,6 @@ const AddRentLedger = () => {
       storeName,
       locCode,
       debit: parseFloat(debit) || 0,
-      credit: parseFloat(credit) || 0,
     };
 
     try {
@@ -509,7 +507,7 @@ const AddRentLedger = () => {
               </div>
             </div>
 
-            {/* Row 3: Debit & Credit (Optional) */}
+            {/* Row 3: Debit & Credit (automatic) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-2">Debit (₹)</label>
@@ -524,15 +522,13 @@ const AddRentLedger = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">Credit (₹) <span className="text-gray-400 font-normal">(Optional)</span></label>
-                <input
-                  type="number"
-                  step="any"
-                  placeholder="Enter amount"
-                  value={credit}
-                  onChange={(e) => setCredit(e.target.value)}
-                  className={inputClass}
-                />
+                <label className="block text-xs font-medium text-gray-600 mb-2">Credit (₹)</label>
+                <div className="flex items-start gap-2.5 min-h-11 px-3.5 py-2.5 rounded-xl border border-dashed border-gray-200 bg-gray-50 text-xs text-gray-500 leading-relaxed">
+                  <Info size={14} className="shrink-0 mt-0.5 text-gray-400" />
+                  <span>
+                    Filled automatically from <span className="font-semibold text-gray-700">Building Rent</span> expenses recorded for this tenant in Record Expense.
+                  </span>
+                </div>
               </div>
             </div>
 

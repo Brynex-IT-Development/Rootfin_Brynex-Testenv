@@ -24,7 +24,7 @@ const baseExpenseCats = [
   { value: "printing stationary",   label: "Printing & Stationary",        subs: ["Printout", "Books/pen/Checklist/Register/Bill Book/Voucher", "Stationary Items"] },
   { value: "staff welfare",         label: "Staff Welfare",                subs: ["Cake purchase", "Food allowance on Special Occassion", "Other Refreshment"] },
   { value: "staff reimbursement",   label: "Staff Accommodation",          subs: ["Staff room rent", "Electricity"] },
-  { value: "rent",                  label: "Store Rent" },
+  { value: "rent",                  label: "Building Rent" },
   { value: "asset purchase",        label: "Asset Purchase",               subs: ["Steamer", "Chairs", "Electronic Items", "Any other Furniture items"] },
   { value: "spot incentive",        label: "Incentive",                    subs: ["Spot incentive", "Weekly incentive"] },
   { value: "compensation",          label: "Compensation" },

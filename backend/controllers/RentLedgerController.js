@@ -1,6 +1,46 @@
 import mongoose from "mongoose";
 import RentLedger from "../model/RentLedger.js";
-import { getLocationExpenses } from "../utils/locationExpenses.js";
+import Transaction from "../model/Transaction.js";
+
+// "Building Rent" in Record Expense is saved with category "Rent"
+// (older entries too, some as "store rent"), so match those, any letter case.
+const BUILDING_RENT_CATEGORY = /^(building\s+|store\s+)?rent$/i;
+
+/**
+ * Building Rent payments recorded as expenses between two dates.
+ *  - With a tenantId: payments tagged with that tenant.
+ *  - Without one (rent ledger entries made before tenants existed): untagged
+ *    payments for that location, so tagged ones are never counted twice.
+ * Returns { total, count } with total as a positive amount.
+ */
+const getBuildingRentPaid = async ({ tenantId, locCode }, fromDate, toDate) => {
+  const from = new Date(fromDate);
+  from.setUTCHours(0, 0, 0, 0);
+  const to = new Date(toDate);
+  to.setUTCHours(23, 59, 59, 999);
+
+  const query = {
+    type: /^expense$/i,
+    category: BUILDING_RENT_CATEGORY,
+    date: { $gte: from, $lte: to },
+  };
+
+  if (tenantId) {
+    query.tenantId = tenantId;
+  } else {
+    if (!locCode) return { total: 0, count: 0 };
+    query.locCode = String(locCode);
+    query.tenantId = null; // matches missing or null
+  }
+
+  const txns = await Transaction.find(query, { cash: 1, rbl: 1, bank: 1, upi: 1 }).lean();
+  // Expenses are stored as negative amounts
+  const total = txns.reduce(
+    (sum, t) => sum - (Number(t.cash || 0) + Number(t.rbl || 0) + Number(t.bank || 0) + Number(t.upi || 0)),
+    0
+  );
+  return { total: Math.round(total * 100) / 100, count: txns.length };
+};
 
 export const createRentLedger = async (req, res) => {
   try {
@@ -101,32 +141,30 @@ export const getRentLedgers = async (req, res) => {
 
     const rawLedgers = await RentLedger.find(query).sort({ date: 1, createdAt: 1 }).lean();
 
-    // Credit = all expenses of that location in the selected period
-    // (same numbers as the Income & Expenses report), plus any manual credit.
-    // If a location has more than one rent entry in the period, its expenses are
-    // added to the first entry only, so they are not counted twice.
+    // Credit = only the Building Rent paid (Record Expense) for this tenant
+    // in the selected period. If a tenant has more than one rent entry in the
+    // period, the payments go on the first entry only, so they are not counted twice.
     const countedPeriods = new Set();
     const ledgers = [];
     for (const item of rawLedgers) {
       const periodFrom = DateFrom || item.fromDate;
       const periodTo = DateTo || item.toDate;
-      const key = `${item.locCode}|${new Date(periodFrom).toISOString()}|${new Date(periodTo).toISOString()}`;
+      const tenantId = item.tenantId ? String(item.tenantId) : "";
+      const owner = tenantId ? `tenant:${tenantId}` : `loc:${item.locCode}`;
+      const key = `${owner}|${new Date(periodFrom).toISOString()}|${new Date(periodTo).toISOString()}`;
 
-      let expenses = { total: 0, breakdown: {} };
+      let rentPaid = { total: 0, count: 0 };
       if (!countedPeriods.has(key)) {
         countedPeriods.add(key);
-        expenses = await getLocationExpenses(item.locCode, periodFrom, periodTo);
+        rentPaid = await getBuildingRentPaid({ tenantId, locCode: item.locCode }, periodFrom, periodTo);
       }
 
-      const manualCredit = Number(item.credit) || 0;
-      const credit = manualCredit + expenses.total;
+      const credit = rentPaid.total;
       const debit = Number(item.debit) || 0;
       ledgers.push({
         ...item,
-        manualCredit,
-        expenseCredit: expenses.total,
-        expenseBreakdown: expenses.breakdown,
         credit,
+        rentPaymentCount: rentPaid.count,
         balance: debit - credit,
       });
     }
