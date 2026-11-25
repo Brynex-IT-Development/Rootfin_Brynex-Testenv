@@ -14,6 +14,7 @@ import {
   Building2, 
   FileText,
   Lock,
+  Plus,
   User
 } from "lucide-react";
 import { BsBank2 } from "react-icons/bs";
@@ -226,31 +227,13 @@ const DIRECT_EXPENSE_CATS = [
 ];
 
 const INDIRECT_EXPENSE_CATS = [
-  { value: "Courier Charges", label: "Courier Charges" },
-  { value: "Repairs & Maintenance", label: "Repairs & Maintenance" },
-  { value: "Incentive", label: "Incentive" },
-  { value: "Salary Advance", label: "Salary Advance" },
-  { value: "Travel Exp", label: "Travel Exp" },
-  { value: "Fuel Exp", label: "Fuel Exp" },
-  { value: "Office Expense", label: "Office Expense" },
-  { value: "Internet Expense", label: "Internet Expense" },
-  { value: "Electricity Charges", label: "Electricity Charges" },
-  { value: "Water Charges", label: "Water Charges" },
-  { value: "Waste Management", label: "Waste Management" },
-  { value: "Printing & Stationary", label: "Printing & Stationary" },
-  { value: "Staff Welfare", label: "Staff Welfare" },
-  { value: "Staff Accommodation", label: "Staff Accommodation" },
-  // Shown as "Building Rent"; still saved as "Rent" so old entries and reports match
-  { value: BUILDING_RENT_CATEGORY, label: "Building Rent" },
-  { value: "Asset Purchase", label: "Asset Purchase" },
-  { value: "Compensation", label: "Compensation" },
-  { value: "Refund", label: "Refund" },
   { value: "Office Supplies", label: "Office Supplies" },
   { value: "Bank Fees and Charges", label: "Bank Fees and Charges" },
   { value: "Travel Expense", label: "Travel Expense" },
   { value: "Directors Travelling Expense", label: "Directors Travelling Expense" },
   { value: "IT related expenses", label: "IT related expenses" },
-  { value: "Building Rent", label: "Building Rent" },
+  // Shown as "Building Rent"; still saved as "Rent" so old entries and reports match
+  { value: BUILDING_RENT_CATEGORY, label: "Building Rent" },
   { value: "Vendor", label: "Vendor" },
   { value: "Repairs and Maintenance", label: "Repairs and Maintenance" },
   { value: "EPF Contribution-Employer", label: "EPF Contribution-Employer" },
@@ -351,11 +334,280 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const [amount, setAmount] = useState("");
   const [remarks, setRemarks] = useState("");
 
+  // Custom Categories from Database
+  const [customDirectCats, setCustomDirectCats] = useState([]);
+  const [customIndirectCats, setCustomIndirectCats] = useState([]);
+  const [isAddCatModalOpen, setIsAddCatModalOpen] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [addingCat, setAddingCat] = useState(false);
+  const [catModalError, setCatModalError] = useState("");
+
+  // Subcategory States & Management
+  const [subCategoriesList, setSubCategoriesList] = useState([]);
+  const [isAddSubCatModalOpen, setIsAddSubCatModalOpen] = useState(false);
+  const [subCatParentCategory, setSubCatParentCategory] = useState("");
+  const [subCatInputs, setSubCatInputs] = useState([""]);
+  const [addingSubCat, setAddingSubCat] = useState(false);
+  const [subCatModalError, setSubCatModalError] = useState("");
+
+  // Bank Accounts Management
+  const [bankAccountList, setBankAccountList] = useState(BANK_ACCOUNTS);
+  const [isAddBankModalOpen, setIsAddBankModalOpen] = useState(false);
+  const [newBankName, setNewBankName] = useState("");
+  const [addingBank, setAddingBank] = useState(false);
+  const [bankModalError, setBankModalError] = useState("");
+
+  // Vendors (only for the Vendor category)
+  const [vendorList, setVendorList] = useState([]);
+  const [selectedVendor, setSelectedVendor] = useState("");
+
   // Tenant (only for Building Rent) — tenants come from Ledgers → Rent Ledgers
   const [tenantId, setTenantId] = useState("");
   const [tenants, setTenants] = useState([]);
   const [tenantsLoading, setTenantsLoading] = useState(false);
-  const isBuildingRent = category === BUILDING_RENT_CATEGORY;
+
+  // Same match as the backend Rent Ledger: "Rent", "Building Rent", "Store Rent"
+  const isBuildingRent = /^(building\s+|store\s+)?rent$/i.test((category || "").trim());
+  const isVendor = (category || "").toLowerCase() === "vendor" || (category || "").toLowerCase() === "vendors";
+
+  // Fetch custom categories on mount
+  const fetchCustomCategories = async () => {
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/expense-categories`);
+      if (res.ok) {
+        const json = await res.json();
+        const list = json.data || [];
+        setCustomDirectCats(
+          list
+            .filter((c) => c.expenseType === "direct")
+            .map((c) => ({ value: c.name, label: c.name }))
+        );
+        setCustomIndirectCats(
+          list
+            .filter((c) => c.expenseType === "indirect")
+            .map((c) => ({ value: c.name, label: c.name }))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to fetch custom expense categories:", err);
+    }
+  };
+
+  // Fetch subcategories for current expenseType and selected category
+  const fetchSubCategories = async () => {
+    try {
+      const url = `${baseUrl.baseUrl}api/expense-subcategories?expenseType=${expenseType}${category ? `&category=${encodeURIComponent(category)}` : ""}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const json = await res.json();
+        const list = json.data || [];
+        setSubCategoriesList(list.map((sc) => ({ value: sc.name, label: sc.name, category: sc.category })));
+      }
+    } catch (err) {
+      console.error("Failed to fetch subcategories:", err);
+    }
+  };
+
+  // Fetch Vendors and Tenants
+  const fetchVendorsAndTenants = async () => {
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/purchase/vendors`);
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : data.data || [];
+        const formatted = list.map((v) => ({
+          value: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || v.companyName || "Unnamed Vendor",
+          label: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || v.companyName || "Unnamed Vendor",
+        }));
+        setVendorList(formatted);
+      }
+    } catch (err) {
+      console.warn("Could not fetch vendors from API, trying localStorage:", err);
+      try {
+        const saved = JSON.parse(localStorage.getItem("vendors") || "[]");
+        if (Array.isArray(saved) && saved.length > 0) {
+          setVendorList(saved.map((v) => ({
+            value: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || "Vendor",
+            label: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || "Vendor",
+          })));
+        }
+      } catch (e) {}
+    }
+  };
+
+  // Fetch Bank Accounts from backend
+  const fetchBankAccounts = async () => {
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/bank-accounts`);
+      if (res.ok) {
+        const json = await res.json();
+        const list = json.data || [];
+        if (list.length > 0) {
+          setBankAccountList(list.map((b) => ({ value: b.name, label: b.name })));
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch bank accounts, using fallback defaults:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCustomCategories();
+    fetchVendorsAndTenants();
+    fetchBankAccounts();
+  }, []);
+
+  useEffect(() => {
+    fetchSubCategories();
+    setSubCategory("");
+    setSelectedVendor("");
+  }, [category, expenseType]);
+
+  const handleAddCategorySubmit = async (e) => {
+    if (e) e.preventDefault();
+    setCatModalError("");
+    const trimmed = newCatName.trim();
+    if (!trimmed) {
+      setCatModalError("Category name cannot be empty.");
+      return;
+    }
+
+    setAddingCat(true);
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/expense-categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: trimmed,
+          expenseType: expenseType, // "direct" or "indirect"
+          createdBy: currentusers.name || currentusers.username || (isSuperAdmin ? "SuperAdmin" : "FinancialHead"),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setCatModalError(json.message || "Failed to add category.");
+      } else {
+        await fetchCustomCategories();
+        setCategory(trimmed);
+        setNewCatName("");
+        setIsAddCatModalOpen(false);
+      }
+    } catch (err) {
+      console.error("Error adding category:", err);
+      setCatModalError("Network error: Could not add category.");
+    } finally {
+      setAddingCat(false);
+    }
+  };
+
+  const handleAddSubCategorySubmit = async (e) => {
+    if (e) e.preventDefault();
+    setSubCatModalError("");
+    const targetParentCat = subCatParentCategory.trim() || category.trim();
+
+    if (!targetParentCat) {
+      setSubCatModalError("Please select a parent Category.");
+      return;
+    }
+
+    const cleanNames = subCatInputs
+      .map((name) => (name || "").trim())
+      .filter((name) => name.length > 0);
+
+    if (cleanNames.length === 0) {
+      setSubCatModalError("Please enter at least one subcategory name.");
+      return;
+    }
+
+    setAddingSubCat(true);
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/expense-subcategories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          names: cleanNames,
+          category: targetParentCat,
+          expenseType: expenseType,
+          createdBy: currentusers.name || currentusers.username || (isSuperAdmin ? "SuperAdmin" : "FinancialHead"),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setSubCatModalError(json.message || "Failed to add subcategories.");
+      } else {
+        if (category !== targetParentCat) {
+          setCategory(targetParentCat);
+        }
+        await fetchSubCategories();
+        if (cleanNames.length > 0) {
+          setSubCategory(cleanNames[0]);
+        }
+        setSubCatInputs([""]);
+        setIsAddSubCatModalOpen(false);
+      }
+    } catch (err) {
+      console.error("Error adding subcategories:", err);
+      setSubCatModalError("Network error: Could not add subcategories.");
+    } finally {
+      setAddingSubCat(false);
+    }
+  };
+
+  const handleSubCatInputChange = (index, value) => {
+    setSubCatInputs((prev) => {
+      const copy = [...prev];
+      copy[index] = value;
+      return copy;
+    });
+  };
+
+  const handleAddSubCatField = () => {
+    setSubCatInputs((prev) => [...prev, ""]);
+  };
+
+  const handleRemoveSubCatField = (index) => {
+    if (subCatInputs.length <= 1) {
+      setSubCatInputs([""]);
+      return;
+    }
+    setSubCatInputs((prev) => prev.filter((_, i) => i !== index));
+  };
+  
+  const handleAddBankSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setBankModalError("");
+    const trimmed = newBankName.trim();
+    if (!trimmed) {
+      setBankModalError("Bank account name cannot be empty.");
+      return;
+    }
+
+    setAddingBank(true);
+    try {
+      const res = await fetch(`${baseUrl.baseUrl}api/bank-accounts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: trimmed,
+          createdBy: currentusers.name || currentusers.username || (isSuperAdmin ? "SuperAdmin" : "FinancialHead"),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setBankModalError(json.message || "Failed to add bank account.");
+      } else {
+        await fetchBankAccounts();
+        setBankAccount(trimmed);
+        setNewBankName("");
+        setIsAddBankModalOpen(false);
+      }
+    } catch (err) {
+      console.error("Error adding bank account:", err);
+      setBankModalError("Network error: Could not add bank account.");
+    } finally {
+      setAddingBank(false);
+    }
+  };
 
   // Payment Method States
   const [paymentMethod, setPaymentMethod] = useState("bank");
@@ -575,15 +827,17 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
 
     setIsSubmitting(true);
 
+    // Building Rent keeps its tenant in tenantId/tenantName, so it has no sub category
+    const finalSubCategory = (isBuildingRent ? "" : isVendor ? selectedVendor : subCategory) || "";
     const categoryLabel = categories.find((c) => c.value === category)?.label || category;
-    const defaultRemark = isBuildingRent && selectedTenant
-      ? `${categoryLabel} - ${selectedTenant.name}`
-      : categoryLabel;
+    const remarkDetail = isBuildingRent ? selectedTenant?.name : finalSubCategory;
+    const defaultRemark = remarkDetail ? `${categoryLabel} - ${remarkDetail}` : categoryLabel;
 
     const payload = {
       type: "Expense",
       expenseType: expenseType, // "direct" | "indirect"
       category: category,
+      subCategory: finalSubCategory.trim(),
       remark: remarks.trim() ? `[${expenseType.toUpperCase()}] ${remarks.trim()}` : `[${expenseType.toUpperCase()}] ${defaultRemark}`,
       tenantId: isBuildingRent && selectedTenant ? selectedTenant._id : undefined,
       tenantName: isBuildingRent && selectedTenant ? selectedTenant.name : undefined,
@@ -757,20 +1011,34 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
             {/* Sub Category / Select Tenants / Select Vendors */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 tracking-wide mb-2 uppercase">
-                {isBuildingRent ? "Select Tenants" : isVendor ? "Select Vendors" : "Sub Category"}
+                {isBuildingRent ? (
+                  <>Tenant <span className="text-red-500 font-bold">*</span></>
+                ) : isVendor ? "Select Vendors" : "Sub Category"}
               </label>
               {isBuildingRent ? (
-                <SearchableSelect
-                  value={selectedTenant}
-                  onChange={(val) => setSelectedTenant(val)}
-                  options={fallbackLocations.map((loc) => ({
-                    value: loc.locName,
-                    label: loc.locName,
-                  }))}
-                  placeholder="Select Tenant"
-                  searchPlaceholder="Search tenant..."
-                  icon={Building2}
-                />
+                <>
+                  <SearchableSelect
+                    value={tenantId}
+                    onChange={handleTenantChange}
+                    options={tenantOptions}
+                    placeholder={tenantsLoading ? "Loading tenants..." : "Select Tenant"}
+                    searchPlaceholder="Search tenant..."
+                    disabled={tenantsLoading}
+                    icon={User}
+                  />
+                  {tenantsLoading ? null : tenantOptions.length === 0 ? (
+                    <p className="mt-1.5 text-[11px] text-amber-600">
+                      No tenants {currentBranch ? "for this branch " : ""}yet. Add one in{" "}
+                      <Link to="/ledgers/rent/new" className="font-semibold underline hover:text-amber-700">
+                        Ledgers → Rent Ledgers
+                      </Link>.
+                    </p>
+                  ) : (
+                    <p className="mt-1.5 text-[11px] text-gray-400">
+                      This payment will show as Credit in the tenant&apos;s Rent Ledger.
+                    </p>
+                  )}
+                </>
               ) : isVendor ? (
                 <SearchableSelect
                   value={selectedVendor}
@@ -864,38 +1132,6 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
             </div>
 
           </div>
-
-          {/* Tenant — only for Building Rent */}
-          {isBuildingRent && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 tracking-wide mb-2 uppercase">
-                  Tenant <span className="text-red-500 font-bold">*</span>
-                </label>
-                <SearchableSelect
-                  value={tenantId}
-                  onChange={handleTenantChange}
-                  options={tenantOptions}
-                  placeholder={tenantsLoading ? "Loading tenants..." : "Select Tenant"}
-                  searchPlaceholder="Search tenant..."
-                  disabled={tenantsLoading}
-                  icon={User}
-                />
-                {tenantsLoading ? null : tenantOptions.length === 0 ? (
-                  <p className="mt-1.5 text-[11px] text-amber-600">
-                    No tenants {currentBranch ? "for this branch " : ""}yet. Add one in{" "}
-                    <Link to="/ledgers/rent/new" className="font-semibold underline hover:text-amber-700">
-                      Ledgers → Rent Ledgers
-                    </Link>.
-                  </p>
-                ) : (
-                  <p className="mt-1.5 text-[11px] text-gray-400">
-                    This payment will show as Credit in the tenant&apos;s Rent Ledger.
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Way of Payment */}
           <div className="pt-2">
