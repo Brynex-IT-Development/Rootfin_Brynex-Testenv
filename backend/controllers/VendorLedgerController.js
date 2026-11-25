@@ -2,15 +2,16 @@ import mongoose from "mongoose";
 import VendorLedger from "../model/VendorLedger.js";
 import Vendor from "../model/Vendor.js";
 import Transaction from "../model/Transaction.js";
-import { ledgerDateMatch } from "../utils/ledgerPeriod.js";
-
-const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const exactName = (name) => new RegExp(`^\\s*${escapeRegex(String(name).trim())}\\s*$`, "i");
-const nameKey = (name) => String(name || "").trim().toLowerCase();
+import {
+  ledgerDateMatch,
+  INDIRECT_EXPENSE_MATCH,
+  exactNameRegex as exactName,
+  nameKey,
+  sumPaid,
+} from "../utils/ledgerPeriod.js";
 
 // The "Vendor" and "Vendors" categories in Record Expense → Indirect Expense
 const VENDOR_CATEGORY = /^\s*vendors?\s*$/i;
-const INDIRECT_EXPENSE = [{ expenseType: /^\s*indirect\s*$/i }, { remark: /^\s*\[INDIRECT/i }];
 
 /**
  * Vendor payments recorded in Record Expense → Indirect Expense (category
@@ -40,16 +41,11 @@ const getVendorPaid = async ({ vendorId, vendorName }, fromDate, toDate) => {
   const query = {
     type: /^expense$/i,
     category: VENDOR_CATEGORY,
-    $and: [{ $or: INDIRECT_EXPENSE }, { $or: match }, ...(dateMatch ? [dateMatch] : [])],
+    $and: [INDIRECT_EXPENSE_MATCH, { $or: match }, ...(dateMatch ? [dateMatch] : [])],
   };
 
   const txns = await Transaction.find(query, { cash: 1, rbl: 1, bank: 1, upi: 1 }).lean();
-  // Expenses are stored as negative amounts
-  const total = txns.reduce(
-    (sum, t) => sum - (Number(t.cash || 0) + Number(t.rbl || 0) + Number(t.bank || 0) + Number(t.upi || 0)),
-    0
-  );
-  return { total: Math.round(total * 100) / 100, count: txns.length };
+  return sumPaid(txns);
 };
 
 // POST /api/vendor-ledgers  → add a new vendor ledger entry (debit only;

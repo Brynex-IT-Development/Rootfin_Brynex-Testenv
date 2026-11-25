@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, X, ChevronDown, Plus, Search, Check, Building2, Info } from "lucide-react";
+import { ArrowLeft, X, ChevronDown, Building2, Info } from "lucide-react";
 import baseUrl from "../api/api.js";
 import { useSidebar } from "../hooks/useSidebar.js";
 import useLedgerLocations from "../hooks/useLedgerLocations.js";
 import useVendors from "../hooks/useVendors.js";
+import LedgerPicker from "../components/LedgerPicker.jsx";
 
 // Note: index.css has an unlayered global rule that forces every non-submit
 // <button> to display:inline-block, inherit font-size and use a transparent
@@ -14,154 +15,17 @@ import useVendors from "../hooks/useVendors.js";
 const inputClass =
   "w-full h-11 px-3.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-800 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#9B48D7] focus:ring-4 focus:ring-purple-500/10 hover:border-gray-300 transition-all duration-200 shadow-2xs";
 
-// Searchable dropdown of the vendors in Purchase → Vendors, with an
-// "Add New Vendor" action that opens the vendor form in a new tab.
-const VendorPicker = ({ vendors, loading, value, onChange }) => {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const wrapperRef = useRef(null);
-  const searchRef = useRef(null);
-
-  const selected = vendors.find((v) => v.id === value);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleMouseDown = (e) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false);
-    };
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", handleMouseDown);
-    document.addEventListener("keydown", handleKeyDown);
-    searchRef.current?.focus();
-    return () => {
-      document.removeEventListener("mousedown", handleMouseDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open]);
-
-  const query = search.trim().toLowerCase();
-  const filtered = query
-    ? vendors.filter(
-        (v) => v.name.toLowerCase().includes(query) || v.companyName.toLowerCase().includes(query)
-      )
-    : vendors;
-
-  const choose = (vendor) => {
-    onChange(vendor);
-    setOpen(false);
-    setSearch("");
-  };
-
-  const addNew = () => {
-    setOpen(false);
-    setSearch("");
-    window.open("/purchase/vendors/new", "_blank", "noopener");
-  };
-
-  return (
-    <div ref={wrapperRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        className={`flex! items-center w-full h-11 px-3.5 rounded-xl border bg-white text-sm! text-left shadow-2xs transition-all duration-200 ${
-          open
-            ? "border-[#9B48D7]! ring-4 ring-purple-500/10"
-            : "border-gray-200! hover:border-gray-300!"
-        }`}
-      >
-        <span className="flex-1 min-w-0 truncate">
-          {selected ? (
-            <span className="font-medium text-gray-800">{selected.name}</span>
-          ) : (
-            <span className="font-medium text-gray-800">
-              {loading ? "Loading vendors..." : "Select Vendor"}
-            </span>
-          )}
-        </span>
-        <ChevronDown
-          size={15}
-          className={`ml-2 shrink-0 text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-
-      {open && (
-        <div className="absolute z-30 left-0 right-0 mt-2 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
-          <div className="p-2 border-b border-gray-100">
-            <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              <input
-                ref={searchRef}
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search vendor or company"
-                className="w-full h-9 pl-8 pr-3 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-[#9B48D7] transition-colors"
-              />
-            </div>
-          </div>
-
-          <ul role="listbox" className="max-h-60 overflow-y-auto py-1">
-            {filtered.length === 0 ? (
-              <li className="px-4 py-6 text-center text-sm text-gray-400">
-                {vendors.length === 0
-                  ? "No vendors yet. Add one in Purchase → Vendors."
-                  : `No vendors match "${search.trim()}"`}
-              </li>
-            ) : (
-              filtered.map((v) => {
-                const isSelected = v.id === value;
-                const showCompany = v.companyName && v.companyName.toLowerCase() !== v.name.toLowerCase();
-                return (
-                  <li key={v.id} role="option" aria-selected={isSelected}>
-                    <button
-                      type="button"
-                      onClick={() => choose(v)}
-                      className={`flex! items-center gap-3 w-full px-3 py-2 text-left text-sm! transition-colors ${
-                        isSelected ? "bg-purple-50" : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <span className="w-8 h-8 shrink-0 rounded-full bg-purple-100 text-[#9B48D7] flex items-center justify-center">
-                        <Building2 size={14} />
-                      </span>
-                      <span className="flex-1 min-w-0">
-                        <span className="block truncate font-medium text-gray-800">{v.name}</span>
-                        {showCompany && (
-                          <span className="block text-xs text-gray-500 truncate">{v.companyName}</span>
-                        )}
-                      </span>
-                      {isSelected && <Check size={16} className="shrink-0 text-[#9B48D7]" />}
-                    </button>
-                  </li>
-                );
-              })
-            )}
-          </ul>
-
-          <div className="border-t border-gray-100 p-1.5">
-            <button
-              type="button"
-              onClick={addNew}
-              className="flex! items-center gap-2 w-full px-3 py-2 rounded-lg text-left text-sm! font-semibold text-[#9B48D7] hover:bg-purple-50 transition-colors"
-            >
-              <Plus size={16} className="shrink-0" />
-              <span className="truncate">Add New Vendor</span>
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const AddVendorLedger = () => {
   const navigate = useNavigate();
   const isSidebarOpen = useSidebar();
   const ledgerStores = useLedgerLocations();
   const { vendors, loading: vendorsLoading, reload: reloadVendors } = useVendors();
+  // Company shown under the name when it differs
+  const vendorItems = vendors.map((v) => ({
+    id: v.id,
+    name: v.name,
+    detail: v.companyName && v.companyName.toLowerCase() !== v.name.toLowerCase() ? v.companyName : "",
+  }));
 
   // Use local date parts (toISOString shifts dates back a day in IST)
   const formatDateStr = (d) =>
@@ -311,11 +175,20 @@ const AddVendorLedger = () => {
 
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-2">Vendor</label>
-                <VendorPicker
-                  vendors={vendors}
+                <LedgerPicker
+                  items={vendorItems}
                   loading={vendorsLoading}
                   value={vendorId}
                   onChange={(vendor) => setVendorId(vendor.id)}
+                  onAddNew={() => window.open("/purchase/vendors/new", "_blank", "noopener")}
+                  icon={Building2}
+                  text={{
+                    placeholder: "Select Vendor",
+                    loading: "Loading vendors...",
+                    search: "Search vendor or company",
+                    empty: "No vendors yet. Add one in Purchase → Vendors.",
+                    addNew: () => "Add New Vendor",
+                  }}
                 />
               </div>
             </div>

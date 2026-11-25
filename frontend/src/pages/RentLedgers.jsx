@@ -149,6 +149,7 @@ const RentLedgers = () => {
                   <th className="py-4 px-6">DATE</th>
                   <th className="py-4 px-6">TENANT</th>
                   <th className="py-4 px-6">LOCATION</th>
+                  <th className="py-4 px-6">DUE DATE</th>
                   <th className="py-4 px-6">DEBIT (₹)</th>
                   <th className="py-4 px-6">CREDIT (₹)</th>
                   <th className="py-4 px-6">BALANCE</th>
@@ -157,13 +158,13 @@ const RentLedgers = () => {
               <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
                 {loading ? (
                   <tr>
-                    <td colSpan="6" className="py-14 text-center text-gray-400">
+                    <td colSpan="7" className="py-14 text-center text-gray-400">
                       Loading rent ledgers...
                     </td>
                   </tr>
                 ) : ledgers.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="py-14 text-center text-gray-400">
+                    <td colSpan="7" className="py-14 text-center text-gray-400">
                       No rent ledger records found for the selected date range.
                     </td>
                   </tr>
@@ -178,6 +179,9 @@ const RentLedgers = () => {
                       </td>
                       <td className="py-4 px-6 font-medium text-gray-900">
                         {row.storeName}
+                      </td>
+                      <td className="py-4 px-6 font-normal text-gray-800 whitespace-nowrap">
+                        {row.dueDate ? formatDateDisplay(row.dueDate) : "-"}
                       </td>
                       <td className="py-4 px-6 font-medium text-gray-800">
                         {formatCurrency(row.debit)}
@@ -199,6 +203,7 @@ const RentLedgers = () => {
                 <tfoot>
                   <tr className="bg-[#E5E7EB] text-gray-900 text-sm font-bold border-t-2 border-gray-300">
                     <td className="py-4 px-6 uppercase tracking-wider">TOTAL</td>
+                    <td className="py-4 px-6"></td>
                     <td className="py-4 px-6"></td>
                     <td className="py-4 px-6"></td>
                     <td className="py-4 px-6">{formatCurrency(totals.totalDebit)}</td>

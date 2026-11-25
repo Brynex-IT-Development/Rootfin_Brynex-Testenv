@@ -201,6 +201,7 @@ const AddRentLedger = () => {
   const [tenantId, setTenantId] = useState("");
   const [storeName, setStoreName] = useState("");
   const [debit, setDebit] = useState("");
+  const [dueDate, setDueDate] = useState("");
 
   const [tenants, setTenants] = useState([]);
   const [tenantsLoading, setTenantsLoading] = useState(false);
@@ -344,6 +345,11 @@ const AddRentLedger = () => {
       return;
     }
 
+    if (!dueDate) {
+      setStatusMessage({ type: "error", text: "Please select a Payment Due Date." });
+      return;
+    }
+
     const selectedLoc = fallbackLocations.find((l) => l.locName === storeName);
     const locCode = selectedLoc ? selectedLoc.locCode : "";
     const selectedTenant = tenants.find((t) => t._id === tenantId);
@@ -356,6 +362,7 @@ const AddRentLedger = () => {
       date: fromDate,
       tenantId,
       tenantName: selectedTenant ? selectedTenant.name : "",
+      dueDate,
       storeName,
       locCode,
       debit: parseFloat(debit) || 0,
@@ -529,6 +536,22 @@ const AddRentLedger = () => {
                     Filled automatically from <span className="font-semibold text-gray-700">Building Rent</span> expenses recorded for this tenant in Record Expense.
                   </span>
                 </div>
+              </div>
+            </div>
+
+            {/* Row 4: Payment Due Date */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label htmlFor="rent-due-date" className="block text-xs font-medium text-gray-600 mb-2">
+                  Payment Due Date
+                </label>
+                <input
+                  id="rent-due-date"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className={inputClass}
+                />
               </div>
             </div>
 

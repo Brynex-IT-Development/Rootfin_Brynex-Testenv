@@ -385,7 +385,11 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   // Ledger Date (Building Rent / Vendor only): the date this payment counts on
   // in the Rent / Vendor Ledger, e.g. October's rent paid in November. The
   // expense itself is still saved on today's date.
-  const needsLedgerDate = isBuildingRent || isVendor;
+  // "IT related expenses" (Indirect): its sub categories are the subscriptions in
+  // Ledgers → Subscription Ledgers. Same match as the backend Subscription Ledger.
+  const isSubscription =
+    expenseType === "indirect" && /^it( related| and internet)? expenses$/i.test((category || "").trim());
+  const needsLedgerDate = isBuildingRent || isVendor || isSubscription;
   const [ledgerDate, setLedgerDate] = useState(localToday);
 
   // Fetch custom categories on mount
@@ -1104,6 +1108,20 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
                   )}
                 </div>
               )}
+              {isSubscription && (
+                subCategoriesList.length === 0 ? (
+                  <p className="mt-1.5 text-[11px] text-amber-600">
+                    No subscriptions yet. Add one in{" "}
+                    <Link to="/ledgers/subscription/new" className="font-semibold underline hover:text-amber-700">
+                      Ledgers → Subscription Ledgers
+                    </Link>.
+                  </p>
+                ) : (
+                  <p className="mt-1.5 text-[11px] text-gray-400">
+                    Pick the subscription. This payment will show as Credit in its Subscription Ledger.
+                  </p>
+                )
+              )}
             </div>
 
             {/* Branch */}
@@ -1176,7 +1194,9 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
                 <p className="mt-1.5 text-[11px] text-gray-400">
                   {isBuildingRent
                     ? "The month this rent is for. It counts on this date in the Rent Ledger."
-                    : "The date this payment counts on in the Vendor Ledger."}
+                    : isSubscription
+                      ? "The month this subscription is for. It counts on this date in the Subscription Ledger."
+                      : "The date this payment counts on in the Vendor Ledger."}
                 </p>
               </div>
             )}

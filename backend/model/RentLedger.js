@@ -24,6 +24,11 @@ const rentLedgerSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    // Date the rent for this period has to be paid by
+    dueDate: {
+      type: Date,
+      default: null,
+    },
     storeName: {
       type: String,
       required: true,

@@ -36,3 +36,29 @@ export const parseLedgerDate = (value) => {
   const d = new Date(String(value).split("T")[0]); // "YYYY-MM-DD" → UTC midnight
   return isNaN(d.getTime()) ? null : d;
 };
+
+/* ── Matching payments to a ledger ─────────────────────────────────────── */
+
+// Saved from Record Expense → Indirect Expense (older entries only have the
+// "[INDIRECT]" remark prefix)
+export const INDIRECT_EXPENSE_MATCH = {
+  $or: [{ expenseType: /^\s*indirect\s*$/i }, { remark: /^\s*\[INDIRECT/i }],
+};
+
+const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Regex matching a name exactly, ignoring letter case and outer spaces. */
+export const exactNameRegex = (name) =>
+  new RegExp(`^\\s*${escapeRegex(String(name).trim())}\\s*$`, "i");
+
+/** Key for grouping by name: trimmed, lower case. */
+export const nameKey = (name) => String(name || "").trim().toLowerCase();
+
+/** Total of expense payments (stored negative) as a positive amount, plus count. */
+export const sumPaid = (txns) => {
+  const total = txns.reduce(
+    (sum, t) => sum - (Number(t.cash || 0) + Number(t.rbl || 0) + Number(t.bank || 0) + Number(t.upi || 0)),
+    0
+  );
+  return { total: Math.round(total * 100) / 100, count: txns.length };
+};

@@ -47,6 +47,7 @@ export const createRentLedger = async (req, res) => {
       date,
       tenantId,
       tenantName = "",
+      dueDate,
       storeName,
       locCode,
       debit = 0,
@@ -59,6 +60,15 @@ export const createRentLedger = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "fromDate, toDate, and storeName are required fields.",
+      });
+    }
+
+    // Payment Due Date is optional here (entries made before it existed have none)
+    const dueDateValue = dueDate ? new Date(String(dueDate).split("T")[0]) : null;
+    if (dueDateValue && isNaN(dueDateValue.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment Due Date is not a valid date.",
       });
     }
 
@@ -75,6 +85,7 @@ export const createRentLedger = async (req, res) => {
       date: entryDate,
       tenantId: mongoose.Types.ObjectId.isValid(tenantId) ? tenantId : null,
       tenantName: String(tenantName || "").trim(),
+      dueDate: dueDateValue,
       storeName,
       locCode: locCode ? String(locCode) : "",
       debit: debitNum,
