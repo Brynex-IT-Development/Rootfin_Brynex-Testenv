@@ -142,6 +142,10 @@ const transactionSchema = new mongoose.Schema(
     
     isAdminLevel: { type: Boolean, default: false },
 
+    /* Building Rent expenses: the tenant (from Rent Ledgers) this payment is for */
+    tenantId:     { type: mongoose.Schema.Types.ObjectId, ref: "Tenant", default: null },
+    tenantName:   { type: String, default: "" },
+
     /* 🔺 NEW – stores the uploaded file inside MongoDB */
     attachment: {
       filename:    { type: String },

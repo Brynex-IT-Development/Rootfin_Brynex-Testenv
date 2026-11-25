@@ -81,6 +81,12 @@ import Expenses from "./pages/Expenses.jsx";
 import IncomeExpenseReport from "./pages/IncomeExpenseReport.jsx";
 import DirectIndirectExpenses from "./pages/DirectIndirectExpenses.jsx";
 import RecordExpenses from "./pages/RecordExpenses.jsx";
+import RentLedgers from "./pages/RentLedgers.jsx";
+import AddRentLedger from "./pages/AddRentLedger.jsx";
+import VendorLedgers from "./pages/VendorLedgers.jsx";
+import AddVendorLedger from "./pages/AddVendorLedger.jsx";
+import SubscriptionLedgers from "./pages/SubscriptionLedgers.jsx";
+import AddSubscriptionLedger from "./pages/AddSubscriptionLedger.jsx";
 
 const App = () => {
   const location = useLocation();
@@ -129,7 +135,13 @@ const App = () => {
     "/reports/inventory",
     "/reports/sales",
     "/reports/sales-by-invoice",
-    "/reports/sales-by-group"
+    "/reports/sales-by-group",
+    "/ledgers/rent",
+    "/ledgers/rent/new",
+    "/ledgers/vendor",
+    "/ledgers/vendor/new",
+    "/ledgers/subscription",
+    "/ledgers/subscription/new"
   ];
   const FinancialHeadGuard = ({ children }) => {
     if (isFinancialHead) {
@@ -242,6 +254,14 @@ const App = () => {
           <Route path="/record-expense/new" element={currentuser ? (canAccessRecordExpense ? <ClusterGuard><DaybookGuard><DirectIndirectExpenses initialType="direct" /></DaybookGuard></ClusterGuard> : <Navigate to="/daybook" replace />) : <Navigate to="/login" />} />
           <Route path="/direct-expenses" element={currentuser ? (canAccessRecordExpense ? <ClusterGuard><DaybookGuard><DirectIndirectExpenses initialType="direct" /></DaybookGuard></ClusterGuard> : <Navigate to="/daybook" replace />) : <Navigate to="/login" />} />
           <Route path="/indirect-expenses" element={currentuser ? (canAccessRecordExpense ? <ClusterGuard><DaybookGuard><DirectIndirectExpenses initialType="indirect" /></DaybookGuard></ClusterGuard> : <Navigate to="/daybook" replace />) : <Navigate to="/login" />} />
+          {/* Ledgers Routes */}
+          <Route path="/ledgers/rent" element={currentuser ? <DaybookGuard><RentLedgers /></DaybookGuard> : <Navigate to="/login" />} />
+          <Route path="/ledgers/rent/new" element={currentuser ? <DaybookGuard><AddRentLedger /></DaybookGuard> : <Navigate to="/login" />} />
+          <Route path="/ledgers/vendor" element={currentuser ? <DaybookGuard><VendorLedgers /></DaybookGuard> : <Navigate to="/login" />} />
+          <Route path="/ledgers/vendor/new" element={currentuser ? <DaybookGuard><AddVendorLedger /></DaybookGuard> : <Navigate to="/login" />} />
+          <Route path="/ledgers/subscription" element={currentuser ? <DaybookGuard><SubscriptionLedgers /></DaybookGuard> : <Navigate to="/login" />} />
+          <Route path="/ledgers/subscription/new" element={currentuser ? <DaybookGuard><AddSubscriptionLedger /></DaybookGuard> : <Navigate to="/login" />} />
+
           <Route path="/CashBankLedger" element={currentuser ? <ClusterGuard><DaybookGuard><SecurityPending /></DaybookGuard></ClusterGuard> : <Navigate to="/login" />} />
           <Route path="/securityReport" element={currentuser ? <DaybookGuard><Security /></DaybookGuard> : <Navigate to='/login' />} />
           <Route path="/CloseReport" element={currentuser?.power === 'admin' || isFinancialHead ? <CloseReport /> : <Navigate to='/' />} />

@@ -1,0 +1,31 @@
+// Store list used by the ledger "add" forms (same list as the Rent Ledger form)
+const ledgerStores = [
+  { locName: "Suitor Guy Edappally", locCode: "702" },
+  { locName: "Warehouse", locCode: "858" },
+  { locName: "HEAD OFFICE01", locCode: "759" },
+  { locName: "Suitor Guy Trivandrum", locCode: "700" },
+  { locName: "Zorucci Edappally", locCode: "144" },
+  { locName: "Zorucci Edappal", locCode: "100" },
+  { locName: "Zorucci Perinthalmanna", locCode: "133" },
+  { locName: "Zorucci Kottakkal", locCode: "122" },
+  { locName: "Suitor Guy Kottayam", locCode: "701" },
+  { locName: "Suitor Guy Perumbavoor", locCode: "703" },
+  { locName: "Suitor Guy Thrissur", locCode: "704" },
+  { locName: "Suitor Guy Chavakkad", locCode: "706" },
+  { locName: "Suitor Guy Kozhikode", locCode: "712" },
+  { locName: "Suitor Guy Vatakara", locCode: "708" },
+  { locName: "Suitor Guy Edappal", locCode: "707" },
+  { locName: "Suitor Guy Perinthalmanna", locCode: "709" },
+  { locName: "Suitor Guy Kottakkal", locCode: "711" },
+  { locName: "Suitor Guy Manjeri", locCode: "710" },
+  { locName: "Suitor Guy Palakkad", locCode: "705" },
+  { locName: "Suitor Guy Kalpetta", locCode: "717" },
+  { locName: "Suitor Guy Kannur", locCode: "716" },
+  { locName: "Suitor Guy MG Road", locCode: "718" },
+  { locName: "Dappr Squad", locCode: "555" },
+  { locName: "Production", locCode: "101" },
+  { locName: "Office", locCode: "102" },
+  { locName: "WAREHOUSE", locCode: "103" },
+];
+
+export default ledgerStores;

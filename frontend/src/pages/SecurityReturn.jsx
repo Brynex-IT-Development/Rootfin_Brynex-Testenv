@@ -13,7 +13,7 @@ const baseExpenseCats = [
   { value: "telephone internet",    label: "Telephone & Internet" },
   { value: "utility bill",          label: "Utility Bill" },
   { value: "salary",               label: "Salary" },
-  { value: "rent",                  label: "Store Rent" },
+  { value: "rent",                  label: "Building Rent" },
   { value: "courier charges",       label: "Courier Charges" },
   { value: "asset purchase",        label: "Asset Purchase" },
   { value: "promotion_services",    label: "Promotion & Services" },

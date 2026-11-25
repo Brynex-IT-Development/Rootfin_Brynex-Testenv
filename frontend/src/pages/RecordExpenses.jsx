@@ -342,7 +342,11 @@ const RecordExpenses = () => {
       // Search filter (category or remarks)
       if (searchTerm.trim()) {
         const term = searchTerm.toLowerCase();
-        const catMatch = (tx.category || "").toLowerCase().includes(term);
+        const rawCat = (tx.category || "").toLowerCase().trim();
+        const catMatch =
+          rawCat.includes(term) ||
+          (["rent", "store rent"].includes(rawCat) && "building rent".includes(term)) ||
+          (tx.tenantName || "").toLowerCase().includes(term);
         const remarkMatch = (tx.remark || "").toLowerCase().includes(term);
         const branchMatch = getBranchName(tx.locCode).toLowerCase().includes(term);
         if (!catMatch && !remarkMatch && !branchMatch) return false;
@@ -476,10 +480,8 @@ const RecordExpenses = () => {
 
   const getCleanCategory = (cat) => {
     if (!cat) return "-";
-    const normalizedKey = cat.toLowerCase().trim();
-    if (CATEGORY_MAP[normalizedKey]) {
-      return CATEGORY_MAP[normalizedKey];
-    }
+    // "Rent" is shown as "Building Rent" (the saved value stays "Rent")
+    if (["rent", "store rent"].includes(cat.trim().toLowerCase())) return "Building Rent";
     return cat.replace(/^[a-z]/, (m) => m.toUpperCase());
   };
 
@@ -494,7 +496,7 @@ const RecordExpenses = () => {
   const csvHeaders = [
     { label: "Date", key: "date" },
     { label: "Expense Category", key: "category" },
-    { label: "Sub Category", key: "subCategory" },
+    { label: "Tenant", key: "tenant" },
     { label: "Branch", key: "branch" },
     { label: "Expense Type", key: "expenseType" },
     { label: "Payment Method", key: "paymentMethod" },
@@ -512,7 +514,7 @@ const RecordExpenses = () => {
       return {
         date: tx.date ? tx.date.split("T")[0] : "-",
         category: getCleanCategory(tx.category),
-        subCategory: tx.subCategory || "-",
+        tenant: tx.tenantName || "-",
         branch: getBranchName(tx.locCode),
         expenseType: isDirect ? "Direct" : "Indirect",
         paymentMethod: (tx.paymentMethod || "CASH").toUpperCase(),
@@ -736,16 +738,10 @@ const RecordExpenses = () => {
                         {/* Category */}
                         <td className="py-4 px-5 font-medium text-gray-900">
                           {getCleanCategory(tx.category)}
-                        </td>
-
-                        {/* Sub Category */}
-                        <td className="py-4 px-5 text-gray-600 text-xs">
-                          {tx.subCategory && tx.subCategory.trim() ? (
-                            <span className="inline-block px-2.5 py-1 rounded-md bg-gray-100 text-gray-800 font-medium">
-                              {tx.subCategory}
+                          {tx.tenantName && (
+                            <span className="block text-xs font-normal text-gray-500">
+                              Tenant: {tx.tenantName}
                             </span>
-                          ) : (
-                            <span className="text-gray-300">—</span>
                           )}
                         </td>
 

@@ -33,6 +33,9 @@ import ExternalSalesRoutes from "./route/ExternalSalesRoutes.js";
 import ExpenseTargetRoutes from "./route/ExpenseTargetRoutes.js";
 import ExpenseCategoryRoutes from "./route/ExpenseCategoryRoutes.js";
 import DashboardRoutes from "./route/DashboardRoutes.js";
+import RentLedgerRoutes from "./route/RentLedgerRoutes.js";
+import VendorLedgerRoutes from "./route/VendorLedgerRoutes.js";
+import SubscriptionLedgerRoutes from "./route/SubscriptionLedgerRoutes.js";
 import setupSwagger   from "./swagger.js";
 
 const env     = process.env.NODE_ENV || "development";
@@ -103,6 +106,9 @@ app.use("/api",     ExternalSalesRoutes);
 app.use("/api",     ExpenseTargetRoutes);
 app.use("/api",     ExpenseCategoryRoutes);
 app.use("/api/dashboard", DashboardRoutes);
+app.use("/api",           RentLedgerRoutes);
+app.use("/api",           VendorLedgerRoutes);
+app.use("/api",           SubscriptionLedgerRoutes);
 
 // Test route to verify server is running
 app.get("/api/test", (_req, res) => {
