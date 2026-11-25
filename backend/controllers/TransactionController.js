@@ -4,6 +4,7 @@ import Transaction from "../model/Transaction.js";
 import SalesInvoice from "../model/SalesInvoice.js";
 import CloseTransaction from "../model/Closing.js";
 import { propagateCashDiff } from "../utils/cashPropagation.js";
+import { parseLedgerDate } from "../utils/ledgerPeriod.js";
 import { getCachedData, setCachedData, generateCacheKey } from "../utils/cacheManager.js";
 
 // Optimized function to get transactions with caching and better queries
@@ -119,6 +120,9 @@ export const CreatePayment = async (req, res) => {
       isAdminLevel,
       tenantId,         // Building Rent expenses: tenant from Rent Ledgers
       tenantName,
+      vendorId,         // Vendor expenses: vendor from Purchase → Vendors
+      vendorName,
+      periodDate,       // Building Rent / Vendor: date it counts on in the ledger
       attachment        // 🔺 ADDED  (base-64 string from React)
     } = req.body;
 
@@ -184,7 +188,10 @@ export const CreatePayment = async (req, res) => {
       isAdminLevel,
       tenantId: mongoose.isValidObjectId(tenantId) ? tenantId : null,
       tenantName: tenantName ? String(tenantName).trim() : "",
-      attachment: attachmentObj                     // 🔺 ADDED
+      vendorId: mongoose.isValidObjectId(vendorId) ? vendorId : null,
+      vendorName: vendorName ? String(vendorName).trim() : "",
+      periodDate: parseLedgerDate(periodDate),
+      attachment: attachmentObj                   // 🔺 ADDED
     });
 
     // ✅ Propagate cash to CloseTransaction for date >= txDate (only for store-level entries)

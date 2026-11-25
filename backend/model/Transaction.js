@@ -146,6 +146,15 @@ const transactionSchema = new mongoose.Schema(
     tenantId:     { type: mongoose.Schema.Types.ObjectId, ref: "Tenant", default: null },
     tenantName:   { type: String, default: "" },
 
+    /* Vendor expenses: the vendor (from Purchase → Vendors) this payment is for */
+    vendorId:     { type: mongoose.Schema.Types.ObjectId, ref: "Vendor", default: null },
+    vendorName:   { type: String, default: "" },
+
+    /* Building Rent / Vendor expenses: the date this payment counts on in the
+       Rent / Vendor Ledger (e.g. October's rent paid in November). `date` stays
+       the day it was paid. See utils/ledgerPeriod.js */
+    periodDate:   { type: Date, default: null },
+
     /* 🔺 NEW – stores the uploaded file inside MongoDB */
     attachment: {
       filename:    { type: String },

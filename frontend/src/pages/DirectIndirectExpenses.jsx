@@ -15,11 +15,13 @@ import {
   FileText,
   Lock,
   Plus,
-  User
+  User,
+  CalendarDays
 } from "lucide-react";
 import { BsBank2 } from "react-icons/bs";
 import { MdCurrencyRupee } from "react-icons/md";
 import { useSidebar } from "../hooks/useSidebar.js";
+import useVendors from "../hooks/useVendors.js";
 import {
   IMAGE_CONFIG,
   processImageFiles,
@@ -217,6 +219,12 @@ const SearchableSelect = ({
 // up as Credit in that tenant's Rent Ledger.
 const BUILDING_RENT_CATEGORY = "Rent";
 
+// Today as YYYY-MM-DD in local time (toISOString shifts dates back a day in IST)
+const localToday = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
 const DIRECT_EXPENSE_CATS = [
   { value: "Dry Cleaning Expense", label: "Dry Cleaning Expense" },
   { value: "Alteration Expense", label: "Alteration Expense" },
@@ -357,9 +365,12 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const [addingBank, setAddingBank] = useState(false);
   const [bankModalError, setBankModalError] = useState("");
 
-  // Vendors (only for the Vendor category)
-  const [vendorList, setVendorList] = useState([]);
-  const [selectedVendor, setSelectedVendor] = useState("");
+  // Vendor (only for the Vendor category) — vendors come from Purchase → Vendors.
+  // Payments under it show up as Credit in that vendor's Vendor Ledger.
+  const { vendors, loading: vendorsLoading } = useVendors();
+  const [selectedVendor, setSelectedVendor] = useState(""); // vendor id
+  const vendorOptions = vendors.map((v) => ({ value: v.id, label: v.name }));
+  const selectedVendorObj = vendors.find((v) => v.id === selectedVendor);
 
   // Tenant (only for Building Rent) — tenants come from Ledgers → Rent Ledgers
   const [tenantId, setTenantId] = useState("");
@@ -368,7 +379,14 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
 
   // Same match as the backend Rent Ledger: "Rent", "Building Rent", "Store Rent"
   const isBuildingRent = /^(building\s+|store\s+)?rent$/i.test((category || "").trim());
-  const isVendor = (category || "").toLowerCase() === "vendor" || (category || "").toLowerCase() === "vendors";
+  // "Vendor" or "Vendors" — same match as the backend Vendor Ledger
+  const isVendor = /^vendors?$/i.test((category || "").trim());
+
+  // Ledger Date (Building Rent / Vendor only): the date this payment counts on
+  // in the Rent / Vendor Ledger, e.g. October's rent paid in November. The
+  // expense itself is still saved on today's date.
+  const needsLedgerDate = isBuildingRent || isVendor;
+  const [ledgerDate, setLedgerDate] = useState(localToday);
 
   // Fetch custom categories on mount
   const fetchCustomCategories = async () => {
@@ -408,33 +426,6 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
     }
   };
 
-  // Fetch Vendors and Tenants
-  const fetchVendorsAndTenants = async () => {
-    try {
-      const res = await fetch(`${baseUrl.baseUrl}api/purchase/vendors`);
-      if (res.ok) {
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : data.data || [];
-        const formatted = list.map((v) => ({
-          value: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || v.companyName || "Unnamed Vendor",
-          label: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || v.companyName || "Unnamed Vendor",
-        }));
-        setVendorList(formatted);
-      }
-    } catch (err) {
-      console.warn("Could not fetch vendors from API, trying localStorage:", err);
-      try {
-        const saved = JSON.parse(localStorage.getItem("vendors") || "[]");
-        if (Array.isArray(saved) && saved.length > 0) {
-          setVendorList(saved.map((v) => ({
-            value: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || "Vendor",
-            label: v.displayName || `${v.firstName || ""} ${v.lastName || ""}`.trim() || "Vendor",
-          })));
-        }
-      } catch (e) {}
-    }
-  };
-
   // Fetch Bank Accounts from backend
   const fetchBankAccounts = async () => {
     try {
@@ -453,7 +444,6 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
 
   useEffect(() => {
     fetchCustomCategories();
-    fetchVendorsAndTenants();
     fetchBankAccounts();
   }, []);
 
@@ -807,6 +797,16 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
       return;
     }
 
+    if (isVendor && !selectedVendorObj) {
+      setStatusMessage({ type: "error", text: "Please select a Vendor." });
+      return;
+    }
+
+    if (needsLedgerDate && !ledgerDate) {
+      setStatusMessage({ type: "error", text: "Please select the Ledger Date." });
+      return;
+    }
+
     if (!amount || parseFloat(amount) <= 0) {
       setStatusMessage({ type: "error", text: "Please enter a valid Amount." });
       return;
@@ -827,8 +827,10 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
 
     setIsSubmitting(true);
 
-    // Building Rent keeps its tenant in tenantId/tenantName, so it has no sub category
-    const finalSubCategory = (isBuildingRent ? "" : isVendor ? selectedVendor : subCategory) || "";
+    // Building Rent keeps its tenant in tenantId/tenantName, so it has no sub category.
+    // Vendor keeps the vendor name as sub category (older entries and reports use it)
+    // plus vendorId/vendorName for the Vendor Ledger.
+    const finalSubCategory = (isBuildingRent ? "" : isVendor ? selectedVendorObj?.name : subCategory) || "";
     const categoryLabel = categories.find((c) => c.value === category)?.label || category;
     const remarkDetail = isBuildingRent ? selectedTenant?.name : finalSubCategory;
     const defaultRemark = remarkDetail ? `${categoryLabel} - ${remarkDetail}` : categoryLabel;
@@ -841,6 +843,9 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
       remark: remarks.trim() ? `[${expenseType.toUpperCase()}] ${remarks.trim()}` : `[${expenseType.toUpperCase()}] ${defaultRemark}`,
       tenantId: isBuildingRent && selectedTenant ? selectedTenant._id : undefined,
       tenantName: isBuildingRent && selectedTenant ? selectedTenant.name : undefined,
+      vendorId: isVendor && selectedVendorObj ? selectedVendorObj.id : undefined,
+      vendorName: isVendor && selectedVendorObj ? selectedVendorObj.name : undefined,
+      periodDate: needsLedgerDate ? ledgerDate : undefined,
       locCode: targetBranch,
       isAdminLevel: canSelectStore,
       amount: `-${amount}`,
@@ -880,6 +885,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const handleCancel = () => {
     setCategory("");
     setTenantId("");
+    setLedgerDate(localToday());
     if (canSelectStore) setBranch("");
     setAmount("");
     setRemarks("");
@@ -1013,7 +1019,9 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
               <label className="block text-xs font-semibold text-gray-700 tracking-wide mb-2 uppercase">
                 {isBuildingRent ? (
                   <>Tenant <span className="text-red-500 font-bold">*</span></>
-                ) : isVendor ? "Select Vendors" : "Sub Category"}
+                ) : isVendor ? (
+                  <>Vendor <span className="text-red-500 font-bold">*</span></>
+                ) : "Sub Category"}
               </label>
               {isBuildingRent ? (
                 <>
@@ -1040,14 +1048,29 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
                   )}
                 </>
               ) : isVendor ? (
-                <SearchableSelect
-                  value={selectedVendor}
-                  onChange={(val) => setSelectedVendor(val)}
-                  options={vendorList}
-                  placeholder="Select Vendor"
-                  searchPlaceholder="Search vendor..."
-                  icon={Building2}
-                />
+                <>
+                  <SearchableSelect
+                    value={selectedVendor}
+                    onChange={(val) => setSelectedVendor(val)}
+                    options={vendorOptions}
+                    placeholder={vendorsLoading ? "Loading vendors..." : "Select Vendor"}
+                    searchPlaceholder="Search vendor..."
+                    disabled={vendorsLoading}
+                    icon={Building2}
+                  />
+                  {vendorsLoading ? null : vendorOptions.length === 0 ? (
+                    <p className="mt-1.5 text-[11px] text-amber-600">
+                      No vendors yet. Add one in{" "}
+                      <Link to="/purchase/vendors/new" className="font-semibold underline hover:text-amber-700">
+                        Purchase → Vendors
+                      </Link>.
+                    </p>
+                  ) : (
+                    <p className="mt-1.5 text-[11px] text-gray-400">
+                      This payment will show as Credit in the vendor&apos;s Vendor Ledger.
+                    </p>
+                  )}
+                </>
               ) : (
                 <div className="flex items-center gap-2">
                   <div className="flex-1 min-w-0">
@@ -1130,6 +1153,33 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
                 )}
               </div>
             </div>
+
+            {/* Ledger Date (Building Rent / Vendor only) */}
+            {needsLedgerDate && (
+              <div>
+                <label
+                  htmlFor="ledger-date"
+                  className="block text-xs font-semibold text-gray-700 tracking-wide mb-2 uppercase"
+                >
+                  Ledger Date <span className="text-red-500 font-bold">*</span>
+                </label>
+                <div className="relative w-full h-12 flex items-center rounded-xl border border-gray-200 bg-white px-3.5 transition-all duration-200 focus-within:border-[#9B48D7] focus-within:ring-4 focus-within:ring-purple-500/10 hover:border-gray-300">
+                  <CalendarDays size={16} className="text-gray-400 shrink-0 select-none mr-2" />
+                  <input
+                    id="ledger-date"
+                    type="date"
+                    value={ledgerDate}
+                    onChange={(e) => setLedgerDate(e.target.value)}
+                    className="w-full h-full bg-transparent text-sm font-semibold text-gray-900 focus:outline-none cursor-pointer"
+                  />
+                </div>
+                <p className="mt-1.5 text-[11px] text-gray-400">
+                  {isBuildingRent
+                    ? "The month this rent is for. It counts on this date in the Rent Ledger."
+                    : "The date this payment counts on in the Vendor Ledger."}
+                </p>
+              </div>
+            )}
 
           </div>
 

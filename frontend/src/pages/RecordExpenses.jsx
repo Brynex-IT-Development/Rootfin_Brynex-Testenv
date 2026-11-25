@@ -502,6 +502,7 @@ const RecordExpenses = () => {
     { label: "Expense Category", key: "category" },
     { label: "Sub Category", key: "subCategory" },
     { label: "Tenant", key: "tenant" },
+    { label: "Ledger Date", key: "ledgerDate" },
     { label: "Branch", key: "branch" },
     { label: "Expense Type", key: "expenseType" },
     { label: "Payment Method", key: "paymentMethod" },
@@ -521,6 +522,7 @@ const RecordExpenses = () => {
         category: getCleanCategory(tx.category),
         subCategory: tx.subCategory || "-",
         tenant: tx.tenantName || "-",
+        ledgerDate: tx.periodDate ? tx.periodDate.split("T")[0] : "-",
         branch: getBranchName(tx.locCode),
         expenseType: isDirect ? "Direct" : "Indirect",
         paymentMethod: (tx.paymentMethod || "CASH").toUpperCase(),
@@ -747,6 +749,11 @@ const RecordExpenses = () => {
                           {tx.tenantName && (
                             <span className="block text-xs font-normal text-gray-500">
                               Tenant: {tx.tenantName}
+                            </span>
+                          )}
+                          {tx.periodDate && (
+                            <span className="block text-xs font-normal text-gray-500">
+                              Ledger date: {tx.periodDate.split("T")[0]}
                             </span>
                           )}
                         </td>

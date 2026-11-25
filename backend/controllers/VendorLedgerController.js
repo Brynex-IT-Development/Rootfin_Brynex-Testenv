@@ -1,8 +1,59 @@
+import mongoose from "mongoose";
 import VendorLedger from "../model/VendorLedger.js";
+import Vendor from "../model/Vendor.js";
+import Transaction from "../model/Transaction.js";
+import { ledgerDateMatch } from "../utils/ledgerPeriod.js";
 
 const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const exactName = (name) => new RegExp(`^\\s*${escapeRegex(String(name).trim())}\\s*$`, "i");
+const nameKey = (name) => String(name || "").trim().toLowerCase();
 
-// POST /api/vendor-ledgers  → add a new vendor ledger entry
+// The "Vendor" and "Vendors" categories in Record Expense → Indirect Expense
+const VENDOR_CATEGORY = /^\s*vendors?\s*$/i;
+const INDIRECT_EXPENSE = [{ expenseType: /^\s*indirect\s*$/i }, { remark: /^\s*\[INDIRECT/i }];
+
+/**
+ * Vendor payments recorded in Record Expense → Indirect Expense (category
+ * "Vendor" or "Vendors") whose Ledger Date is between two dates (the payment
+ * date for entries saved without one).
+ *  - Payments tagged with the vendor's id.
+ *  - Older payments saved before the vendor id was stored, matched by vendor name
+ *    (Record Expense keeps it in subCategory). Only untagged ones, so a payment is
+ *    never counted twice.
+ * A missing date leaves that side open. Returns { total, count } with total positive.
+ */
+const getVendorPaid = async ({ vendorId, vendorName }, fromDate, toDate) => {
+  const byName = vendorName
+    ? { $or: [{ vendorName: exactName(vendorName) }, { subCategory: exactName(vendorName) }] }
+    : null;
+
+  const match = [];
+  if (mongoose.isValidObjectId(vendorId)) {
+    match.push({ vendorId });
+    if (byName) match.push({ vendorId: null, ...byName });
+  } else if (byName) {
+    match.push(byName);
+  }
+  if (!match.length) return { total: 0, count: 0 };
+
+  const dateMatch = ledgerDateMatch(fromDate, toDate);
+  const query = {
+    type: /^expense$/i,
+    category: VENDOR_CATEGORY,
+    $and: [{ $or: INDIRECT_EXPENSE }, { $or: match }, ...(dateMatch ? [dateMatch] : [])],
+  };
+
+  const txns = await Transaction.find(query, { cash: 1, rbl: 1, bank: 1, upi: 1 }).lean();
+  // Expenses are stored as negative amounts
+  const total = txns.reduce(
+    (sum, t) => sum - (Number(t.cash || 0) + Number(t.rbl || 0) + Number(t.bank || 0) + Number(t.upi || 0)),
+    0
+  );
+  return { total: Math.round(total * 100) / 100, count: txns.length };
+};
+
+// POST /api/vendor-ledgers  → add a new vendor ledger entry (debit only;
+// credit comes from Vendor payments in Record Expense)
 export const createVendorLedger = async (req, res) => {
   try {
     const {
@@ -13,7 +64,6 @@ export const createVendorLedger = async (req, res) => {
       locCode = "",
       reference = "",
       debit = 0,
-      credit = 0,
       remarks = "",
       createdBy = "",
     } = req.body;
@@ -26,18 +76,23 @@ export const createVendorLedger = async (req, res) => {
     }
 
     const debitNum = Number(debit) || 0;
-    const creditNum = Number(credit) || 0;
+    if (debitNum <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Debit must be greater than 0.",
+      });
+    }
 
     const newLedger = await VendorLedger.create({
       date: new Date(date),
-      vendorId: String(vendorId),
-      vendorName,
+      vendorId: mongoose.isValidObjectId(vendorId) ? String(vendorId) : "",
+      vendorName: String(vendorName).trim(),
       storeName,
       locCode: String(locCode),
       reference,
       debit: debitNum,
-      credit: creditNum,
-      balance: debitNum - creditNum,
+      credit: 0,
+      balance: debitNum,
       remarks,
       createdBy,
     });
@@ -78,14 +133,69 @@ export const getVendorLedgers = async (req, res) => {
     }
 
     if (vendorName && vendorName !== "all") {
-      query.vendorName = new RegExp(`^${escapeRegex(vendorName)}$`, "i");
+      query.vendorName = exactName(vendorName);
     }
 
     if (locCode && locCode !== "all") {
       query.locCode = String(locCode);
     }
 
-    const ledgers = await VendorLedger.find(query).sort({ date: 1, createdAt: 1 }).lean();
+    const rawLedgers = await VendorLedger.find(query).sort({ date: 1, createdAt: 1 }).lean();
+
+    // Entries typed in before vendors were picked from the list may have no
+    // vendorId: look it up by name so all of a vendor's entries are matched together.
+    const untaggedNames = [
+      ...new Set(
+        rawLedgers
+          .filter((l) => !mongoose.isValidObjectId(l.vendorId) && l.vendorName)
+          .map((l) => nameKey(l.vendorName))
+      ),
+    ];
+    const idByName = new Map();
+    if (untaggedNames.length) {
+      const found = await Vendor.find(
+        { displayName: { $in: untaggedNames.map(exactName) } },
+        { displayName: 1 }
+      ).lean();
+      found.forEach((v) => idByName.set(nameKey(v.displayName), String(v._id)));
+    }
+
+    const rows = rawLedgers.map((item) => {
+      const vendorId = mongoose.isValidObjectId(item.vendorId)
+        ? String(item.vendorId)
+        : idByName.get(nameKey(item.vendorName)) || "";
+      const owner = vendorId ? `id:${vendorId}` : `name:${nameKey(item.vendorName)}`;
+      return { item, vendorId, owner };
+    });
+
+    // Credit = only the Vendor payments (Record Expense) for this vendor in the
+    // selected period. If a vendor has more than one entry in the period, the
+    // payments go on the first entry only, so they are not counted twice.
+    const firstRowByOwner = new Map();
+    rows.forEach((row) => {
+      if (!firstRowByOwner.has(row.owner)) firstRowByOwner.set(row.owner, row);
+    });
+    const paidByOwner = new Map(
+      await Promise.all(
+        [...firstRowByOwner.entries()].map(async ([owner, row]) => [
+          owner,
+          await getVendorPaid({ vendorId: row.vendorId, vendorName: row.item.vendorName }, DateFrom, DateTo),
+        ])
+      )
+    );
+
+    const ledgers = rows.map((row) => {
+      const paid = firstRowByOwner.get(row.owner) === row
+        ? paidByOwner.get(row.owner)
+        : { total: 0, count: 0 };
+      const debit = Number(row.item.debit) || 0;
+      return {
+        ...row.item,
+        credit: paid.total,
+        paymentCount: paid.count,
+        balance: debit - paid.total,
+      };
+    });
 
     const totals = ledgers.reduce(
       (acc, item) => {

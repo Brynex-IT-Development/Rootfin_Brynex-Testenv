@@ -187,7 +187,12 @@ const VendorLedgers = () => {
                       <td className="py-4 px-6 text-gray-700">{row.storeName || "-"}</td>
                       <td className="py-4 px-6 text-gray-700">{row.reference || "-"}</td>
                       <td className="py-4 px-6 font-medium text-gray-800">{formatCurrency(row.debit)}</td>
-                      <td className="py-4 px-6 font-medium text-gray-800">{formatCurrency(row.credit)}</td>
+                      <td
+                        className="py-4 px-6 font-medium text-gray-800"
+                        title={`Vendor payments: ${row.paymentCount || 0} expense${row.paymentCount === 1 ? "" : "s"} in Record Expense`}
+                      >
+                        {formatCurrency(row.credit)}
+                      </td>
                       <td className="py-4 px-6 font-semibold text-gray-900">{formatCurrency(row.balance)}</td>
                       <td className="py-4 px-6 text-right">
                         <button

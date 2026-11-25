@@ -1,50 +1,187 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, X, ChevronDown } from "lucide-react";
+import { ArrowLeft, X, ChevronDown, Plus, Search, Check, Building2, Info } from "lucide-react";
 import baseUrl from "../api/api.js";
 import { useSidebar } from "../hooks/useSidebar.js";
 import useLedgerLocations from "../hooks/useLedgerLocations.js";
+import useVendors from "../hooks/useVendors.js";
+
+// Note: index.css has an unlayered global rule that forces every non-submit
+// <button> to display:inline-block, inherit font-size and use a transparent
+// border. The "!" suffix on a few utilities below (flex!, text-sm!,
+// border-gray-200!) wins over that rule.
 
 const inputClass =
   "w-full h-11 px-3.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-800 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#9B48D7] focus:ring-4 focus:ring-purple-500/10 hover:border-gray-300 transition-all duration-200 shadow-2xs";
+
+// Searchable dropdown of the vendors in Purchase → Vendors, with an
+// "Add New Vendor" action that opens the vendor form in a new tab.
+const VendorPicker = ({ vendors, loading, value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const wrapperRef = useRef(null);
+  const searchRef = useRef(null);
+
+  const selected = vendors.find((v) => v.id === value);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleMouseDown = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false);
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("keydown", handleKeyDown);
+    searchRef.current?.focus();
+    return () => {
+      document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  const query = search.trim().toLowerCase();
+  const filtered = query
+    ? vendors.filter(
+        (v) => v.name.toLowerCase().includes(query) || v.companyName.toLowerCase().includes(query)
+      )
+    : vendors;
+
+  const choose = (vendor) => {
+    onChange(vendor);
+    setOpen(false);
+    setSearch("");
+  };
+
+  const addNew = () => {
+    setOpen(false);
+    setSearch("");
+    window.open("/purchase/vendors/new", "_blank", "noopener");
+  };
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`flex! items-center w-full h-11 px-3.5 rounded-xl border bg-white text-sm! text-left shadow-2xs transition-all duration-200 ${
+          open
+            ? "border-[#9B48D7]! ring-4 ring-purple-500/10"
+            : "border-gray-200! hover:border-gray-300!"
+        }`}
+      >
+        <span className="flex-1 min-w-0 truncate">
+          {selected ? (
+            <span className="font-medium text-gray-800">{selected.name}</span>
+          ) : (
+            <span className="font-medium text-gray-800">
+              {loading ? "Loading vendors..." : "Select Vendor"}
+            </span>
+          )}
+        </span>
+        <ChevronDown
+          size={15}
+          className={`ml-2 shrink-0 text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute z-30 left-0 right-0 mt-2 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+          <div className="p-2 border-b border-gray-100">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search vendor or company"
+                className="w-full h-9 pl-8 pr-3 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-[#9B48D7] transition-colors"
+              />
+            </div>
+          </div>
+
+          <ul role="listbox" className="max-h-60 overflow-y-auto py-1">
+            {filtered.length === 0 ? (
+              <li className="px-4 py-6 text-center text-sm text-gray-400">
+                {vendors.length === 0
+                  ? "No vendors yet. Add one in Purchase → Vendors."
+                  : `No vendors match "${search.trim()}"`}
+              </li>
+            ) : (
+              filtered.map((v) => {
+                const isSelected = v.id === value;
+                const showCompany = v.companyName && v.companyName.toLowerCase() !== v.name.toLowerCase();
+                return (
+                  <li key={v.id} role="option" aria-selected={isSelected}>
+                    <button
+                      type="button"
+                      onClick={() => choose(v)}
+                      className={`flex! items-center gap-3 w-full px-3 py-2 text-left text-sm! transition-colors ${
+                        isSelected ? "bg-purple-50" : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <span className="w-8 h-8 shrink-0 rounded-full bg-purple-100 text-[#9B48D7] flex items-center justify-center">
+                        <Building2 size={14} />
+                      </span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block truncate font-medium text-gray-800">{v.name}</span>
+                        {showCompany && (
+                          <span className="block text-xs text-gray-500 truncate">{v.companyName}</span>
+                        )}
+                      </span>
+                      {isSelected && <Check size={16} className="shrink-0 text-[#9B48D7]" />}
+                    </button>
+                  </li>
+                );
+              })
+            )}
+          </ul>
+
+          <div className="border-t border-gray-100 p-1.5">
+            <button
+              type="button"
+              onClick={addNew}
+              className="flex! items-center gap-2 w-full px-3 py-2 rounded-lg text-left text-sm! font-semibold text-[#9B48D7] hover:bg-purple-50 transition-colors"
+            >
+              <Plus size={16} className="shrink-0" />
+              <span className="truncate">Add New Vendor</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const AddVendorLedger = () => {
   const navigate = useNavigate();
   const isSidebarOpen = useSidebar();
   const ledgerStores = useLedgerLocations();
+  const { vendors, loading: vendorsLoading, reload: reloadVendors } = useVendors();
 
-  const formatDateStr = (d) => d.toISOString().split("T")[0];
+  // Use local date parts (toISOString shifts dates back a day in IST)
+  const formatDateStr = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
   const [date, setDate] = useState(formatDateStr(new Date()));
-  const [vendorName, setVendorName] = useState("");
+  const [vendorId, setVendorId] = useState("");
   const [storeName, setStoreName] = useState("");
   const [reference, setReference] = useState("");
   const [debit, setDebit] = useState("");
-  const [credit, setCredit] = useState("");
   const [remarks, setRemarks] = useState("");
 
-  const [vendors, setVendors] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
 
-  // Load existing vendors (from Purchase > Vendors) for the suggestion list
+  // A vendor added in another tab shows up when you come back to this one
   useEffect(() => {
-    const loadVendors = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem("rootfinuser") || "null");
-        const userId = user?.email || "";
-        const params = new URLSearchParams({ userId });
-        if (user?.power) params.set("userPower", user.power);
-        const res = await fetch(`${baseUrl.baseUrl}api/purchase/vendors?${params.toString()}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        setVendors(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.warn("Could not load vendors:", err);
-      }
-    };
-    loadVendors();
-  }, []);
+    window.addEventListener("focus", reloadVendors);
+    return () => window.removeEventListener("focus", reloadVendors);
+  }, [reloadVendors]);
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
@@ -54,32 +191,28 @@ const AddVendorLedger = () => {
       setStatusMessage({ type: "error", text: "Please select a Date." });
       return;
     }
-    if (!vendorName.trim()) {
-      setStatusMessage({ type: "error", text: "Please enter a Vendor Name." });
+    const selectedVendor = vendors.find((v) => v.id === vendorId);
+    if (!selectedVendor) {
+      setStatusMessage({ type: "error", text: "Please select a Vendor." });
       return;
     }
     const debitNum = parseFloat(debit) || 0;
-    const creditNum = parseFloat(credit) || 0;
-    if (debitNum < 0 || creditNum < 0 || (debitNum === 0 && creditNum === 0)) {
-      setStatusMessage({ type: "error", text: "Please enter a valid Debit or Credit amount." });
+    if (debitNum <= 0) {
+      setStatusMessage({ type: "error", text: "Please enter a valid Debit amount." });
       return;
     }
 
-    const selectedVendor = vendors.find(
-      (v) => (v.displayName || "").toLowerCase() === vendorName.trim().toLowerCase()
-    );
     const selectedLoc = ledgerStores.find((l) => l.locName === storeName);
     const user = JSON.parse(localStorage.getItem("rootfinuser") || "null");
 
     const payload = {
       date,
-      vendorId: selectedVendor?.id || selectedVendor?._id || "",
-      vendorName: vendorName.trim(),
+      vendorId: selectedVendor.id,
+      vendorName: selectedVendor.name,
       storeName,
       locCode: selectedLoc ? selectedLoc.locCode : "",
       reference: reference.trim(),
       debit: debitNum,
-      credit: creditNum,
       remarks: remarks.trim(),
       createdBy: user?.email || "",
     };
@@ -138,7 +271,7 @@ const AddVendorLedger = () => {
           <button
             type="button"
             onClick={handleCancel}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-gray-800 hover:bg-gray-50 text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            className="flex! items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gray-200! bg-white text-gray-500 hover:text-gray-800 hover:bg-gray-50 text-xs! font-semibold shadow-xs transition-all cursor-pointer"
           >
             <X size={14} />
             <span>Close</span>
@@ -177,20 +310,13 @@ const AddVendorLedger = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">Vendor Name</label>
-                <input
-                  type="text"
-                  list="vendor-ledger-vendors"
-                  placeholder="Select or type vendor"
-                  value={vendorName}
-                  onChange={(e) => setVendorName(e.target.value)}
-                  className={inputClass}
+                <label className="block text-xs font-medium text-gray-600 mb-2">Vendor</label>
+                <VendorPicker
+                  vendors={vendors}
+                  loading={vendorsLoading}
+                  value={vendorId}
+                  onChange={(vendor) => setVendorId(vendor.id)}
                 />
-                <datalist id="vendor-ledger-vendors">
-                  {vendors.map((v) => (
-                    <option key={v.id || v._id} value={v.displayName} />
-                  ))}
-                </datalist>
               </div>
             </div>
 
@@ -231,7 +357,7 @@ const AddVendorLedger = () => {
               </div>
             </div>
 
-            {/* Row 3: Debit & Credit */}
+            {/* Row 3: Debit & Credit (automatic) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-2">Debit (₹)</label>
@@ -248,15 +374,12 @@ const AddVendorLedger = () => {
 
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-2">Credit (₹)</label>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  placeholder="Enter amount"
-                  value={credit}
-                  onChange={(e) => setCredit(e.target.value)}
-                  className={inputClass}
-                />
+                <div className="flex items-start gap-2.5 min-h-11 px-3.5 py-2.5 rounded-xl border border-dashed border-gray-200 bg-gray-50 text-xs text-gray-500 leading-relaxed">
+                  <Info size={14} className="shrink-0 mt-0.5 text-gray-400" />
+                  <span>
+                    Filled automatically from <span className="font-semibold text-gray-700">Vendor / Vendors</span> payments recorded for this vendor in Record Expense → Indirect Expense.
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -279,7 +402,7 @@ const AddVendorLedger = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="px-6 py-2.5 rounded-xl bg-[#EFEFEF] hover:bg-gray-200 text-gray-800 font-semibold text-sm transition-colors cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-[#EFEFEF] hover:bg-gray-200 text-gray-800 font-semibold text-sm! transition-colors cursor-pointer"
               >
                 Cancel
               </button>

@@ -1,28 +1,25 @@
 import mongoose from "mongoose";
 import RentLedger from "../model/RentLedger.js";
 import Transaction from "../model/Transaction.js";
+import { ledgerDateMatch } from "../utils/ledgerPeriod.js";
 
 // "Building Rent" in Record Expense is saved with category "Rent"
 // (older entries too, some as "store rent"), so match those, any letter case.
 const BUILDING_RENT_CATEGORY = /^(building\s+|store\s+)?rent$/i;
 
 /**
- * Building Rent payments recorded as expenses between two dates.
+ * Building Rent payments recorded as expenses whose Ledger Date is between two
+ * dates (the payment date for entries saved without one).
  *  - With a tenantId: payments tagged with that tenant.
  *  - Without one (rent ledger entries made before tenants existed): untagged
  *    payments for that location, so tagged ones are never counted twice.
  * Returns { total, count } with total as a positive amount.
  */
 const getBuildingRentPaid = async ({ tenantId, locCode }, fromDate, toDate) => {
-  const from = new Date(fromDate);
-  from.setUTCHours(0, 0, 0, 0);
-  const to = new Date(toDate);
-  to.setUTCHours(23, 59, 59, 999);
-
   const query = {
     type: /^expense$/i,
     category: BUILDING_RENT_CATEGORY,
-    date: { $gte: from, $lte: to },
+    ...ledgerDateMatch(fromDate, toDate),
   };
 
   if (tenantId) {
