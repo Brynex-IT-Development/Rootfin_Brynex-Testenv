@@ -60,6 +60,7 @@ export const createVendorLedger = async (req, res) => {
       locCode = "",
       reference = "",
       debit = 0,
+      dueDate,
       remarks = "",
       createdBy = "",
     } = req.body;
@@ -79,6 +80,14 @@ export const createVendorLedger = async (req, res) => {
       });
     }
 
+    const dueDateValue = dueDate ? new Date(String(dueDate).split("T")[0]) : null;
+    if (dueDateValue && isNaN(dueDateValue.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment Due Date is not a valid date.",
+      });
+    }
+
     const newLedger = await VendorLedger.create({
       date: new Date(date),
       vendorId: mongoose.isValidObjectId(vendorId) ? String(vendorId) : "",
@@ -87,6 +96,7 @@ export const createVendorLedger = async (req, res) => {
       locCode: String(locCode),
       reference,
       debit: debitNum,
+      dueDate: dueDateValue,
       credit: 0,
       balance: debitNum,
       remarks,

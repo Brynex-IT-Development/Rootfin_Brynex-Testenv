@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, X, ChevronDown, Building2, Info } from "lucide-react";
 import baseUrl from "../api/api.js";
 import { useSidebar } from "../hooks/useSidebar.js";
-import useLedgerLocations from "../hooks/useLedgerLocations.js";
 import useVendors from "../hooks/useVendors.js";
 import LedgerPicker from "../components/LedgerPicker.jsx";
 
@@ -12,13 +11,19 @@ import LedgerPicker from "../components/LedgerPicker.jsx";
 // border. The "!" suffix on a few utilities below (flex!, text-sm!,
 // border-gray-200!) wins over that rule.
 
+// Vendor ledgers are only kept for these three locations
+const VENDOR_LOCATIONS = [
+  { locName: "Warehouse", locCode: "103" },
+  { locName: "Production", locCode: "101" },
+  { locName: "Office", locCode: "102" },
+];
+
 const inputClass =
   "w-full h-11 px-3.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-800 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#9B48D7] focus:ring-4 focus:ring-purple-500/10 hover:border-gray-300 transition-all duration-200 shadow-2xs";
 
 const AddVendorLedger = () => {
   const navigate = useNavigate();
   const isSidebarOpen = useSidebar();
-  const ledgerStores = useLedgerLocations();
   const { vendors, loading: vendorsLoading, reload: reloadVendors } = useVendors();
   // Company shown under the name when it differs
   const vendorItems = vendors.map((v) => ({
@@ -36,6 +41,7 @@ const AddVendorLedger = () => {
   const [storeName, setStoreName] = useState("");
   const [reference, setReference] = useState("");
   const [debit, setDebit] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [remarks, setRemarks] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,8 +71,12 @@ const AddVendorLedger = () => {
       setStatusMessage({ type: "error", text: "Please enter a valid Debit amount." });
       return;
     }
+    if (!dueDate) {
+      setStatusMessage({ type: "error", text: "Please select a Payment Due Date." });
+      return;
+    }
 
-    const selectedLoc = ledgerStores.find((l) => l.locName === storeName);
+    const selectedLoc = VENDOR_LOCATIONS.find((l) => l.locName === storeName);
     const user = JSON.parse(localStorage.getItem("rootfinuser") || "null");
 
     const payload = {
@@ -77,6 +87,7 @@ const AddVendorLedger = () => {
       locCode: selectedLoc ? selectedLoc.locCode : "",
       reference: reference.trim(),
       debit: debitNum,
+      dueDate,
       remarks: remarks.trim(),
       createdBy: user?.email || "",
     };
@@ -206,7 +217,7 @@ const AddVendorLedger = () => {
                     className={`${inputClass} pr-10 appearance-none cursor-pointer`}
                   >
                     <option value="">Select Location</option>
-                    {ledgerStores.map((loc) => (
+                    {VENDOR_LOCATIONS.map((loc) => (
                       <option key={loc.locCode} value={loc.locName}>
                         {loc.locName}
                       </option>
@@ -256,18 +267,33 @@ const AddVendorLedger = () => {
               </div>
             </div>
 
-            {/* Row 4: Remarks */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
-                Remarks <span className="text-gray-400 font-normal">(Optional)</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Any notes"
-                value={remarks}
-                onChange={(e) => setRemarks(e.target.value)}
-                className={inputClass}
-              />
+            {/* Row 4: Payment Due Date & Remarks */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label htmlFor="vendor-due-date" className="block text-xs font-medium text-gray-600 mb-2">
+                  Payment Due Date
+                </label>
+                <input
+                  id="vendor-due-date"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">
+                  Remarks <span className="text-gray-400 font-normal">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Any notes"
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
             </div>
 
             {/* Action Buttons */}

@@ -135,8 +135,10 @@ export const CreatePayment = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    /* income must include an attachment (same rule as frontend) */
-    if (type === "Expense" && !attachment) {
+    /* expenses must include an attachment (same rule as frontend),
+       except Building Rent (saved with category "Rent"), where it is optional */
+    const isBuildingRent = /^(building\s+|store\s+)?rent$/i.test(String(category || "").trim());
+    if (type === "Expense" && !attachment && !isBuildingRent) {
       return res.status(400).json({ message: "Attachment required for expense" });
     }
 

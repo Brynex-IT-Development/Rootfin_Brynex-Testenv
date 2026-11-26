@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus } from "lucide-react";
 import baseUrl from "../api/api.js";
@@ -21,10 +21,17 @@ const RentLedgers = () => {
   const [ledgers, setLedgers] = useState([]);
   const [totals, setTotals] = useState({ totalDebit: 0, totalCredit: 0, totalBalance: 0 });
   const [loading, setLoading] = useState(false);
+  // Nothing is loaded until the user picks a date range and clicks Fetch Data
+  const [hasFetched, setHasFetched] = useState(false);
   const [error, setError] = useState(null);
+
+  // Tenant / Location filters (applied to the fetched rows)
+  const [tenantFilter, setTenantFilter] = useState("all");
+  const [locationFilter, setLocationFilter] = useState("all");
 
   const fetchLedgers = async () => {
     setLoading(true);
+    setHasFetched(true);
     setError(null);
     try {
       let res = await fetch(`${baseUrl.baseUrl}api/rent-ledgers?DateFrom=${dateFrom}&DateTo=${dateTo}`);
@@ -47,9 +54,40 @@ const RentLedgers = () => {
     }
   };
 
-  useEffect(() => {
-    fetchLedgers();
-  }, []);
+  const tenantOptions = useMemo(
+    () => [...new Set(ledgers.map((r) => r.tenantName).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [ledgers]
+  );
+  const locationOptions = useMemo(
+    () => [...new Set(ledgers.map((r) => r.storeName).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [ledgers]
+  );
+
+  const filteredLedgers = useMemo(
+    () =>
+      ledgers.filter(
+        (r) =>
+          (tenantFilter === "all" || r.tenantName === tenantFilter) &&
+          (locationFilter === "all" || r.storeName === locationFilter)
+      ),
+    [ledgers, tenantFilter, locationFilter]
+  );
+
+  // Totals follow the filters; with no filter they match the server totals
+  const filteredTotals = useMemo(() => {
+    if (tenantFilter === "all" && locationFilter === "all") return totals;
+    return filteredLedgers.reduce(
+      (acc, r) => {
+        const d = Number(r.debit) || 0;
+        const c = Number(r.credit) || 0;
+        acc.totalDebit += d;
+        acc.totalCredit += c;
+        acc.totalBalance += d - c;
+        return acc;
+      },
+      { totalDebit: 0, totalCredit: 0, totalBalance: 0 }
+    );
+  }, [filteredLedgers, totals, tenantFilter, locationFilter]);
 
   const formatDateDisplay = (dateStr) => {
     if (!dateStr) return "-";
@@ -119,6 +157,34 @@ const RentLedgers = () => {
             >
               {loading ? "Fetching..." : "Fetch Data"}
             </button>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">Tenant</label>
+              <select
+                value={tenantFilter}
+                onChange={(e) => setTenantFilter(e.target.value)}
+                className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 focus:outline-none focus:border-[#9B48D7] focus:ring-4 focus:ring-purple-500/10 shadow-xs min-w-[180px] cursor-pointer"
+              >
+                <option value="all">All Tenants</option>
+                {tenantOptions.map((name) => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">Location</label>
+              <select
+                value={locationFilter}
+                onChange={(e) => setLocationFilter(e.target.value)}
+                className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 focus:outline-none focus:border-[#9B48D7] focus:ring-4 focus:ring-purple-500/10 shadow-xs min-w-[180px] cursor-pointer"
+              >
+                <option value="all">All Locations</option>
+                {locationOptions.map((name) => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div>
@@ -162,14 +228,18 @@ const RentLedgers = () => {
                       Loading rent ledgers...
                     </td>
                   </tr>
-                ) : ledgers.length === 0 ? (
+                ) : filteredLedgers.length === 0 ? (
                   <tr>
                     <td colSpan="7" className="py-14 text-center text-gray-400">
-                      No rent ledger records found for the selected date range.
+                      {!hasFetched
+                        ? "Select a date range and click Fetch Data to view records."
+                        : ledgers.length === 0
+                        ? "No rent ledger records found for the selected date range."
+                        : "No rent ledger records match the selected tenant / location."}
                     </td>
                   </tr>
                 ) : (
-                  ledgers.map((row) => (
+                  filteredLedgers.map((row) => (
                     <tr key={row._id} className="hover:bg-gray-50/80 transition-colors">
                       <td className="py-4 px-6 font-normal text-gray-800 whitespace-nowrap">
                         {formatDateDisplay(row.date || row.fromDate)}
@@ -199,16 +269,16 @@ const RentLedgers = () => {
                   ))
                 )}
               </tbody>
-              {ledgers.length > 0 && (
+              {filteredLedgers.length > 0 && (
                 <tfoot>
                   <tr className="bg-[#E5E7EB] text-gray-900 text-sm font-bold border-t-2 border-gray-300">
                     <td className="py-4 px-6 uppercase tracking-wider">TOTAL</td>
                     <td className="py-4 px-6"></td>
                     <td className="py-4 px-6"></td>
                     <td className="py-4 px-6"></td>
-                    <td className="py-4 px-6">{formatCurrency(totals.totalDebit)}</td>
-                    <td className="py-4 px-6">{formatCurrency(totals.totalCredit)}</td>
-                    <td className="py-4 px-6">{formatCurrency(totals.totalBalance)}</td>
+                    <td className="py-4 px-6">{formatCurrency(filteredTotals.totalDebit)}</td>
+                    <td className="py-4 px-6">{formatCurrency(filteredTotals.totalCredit)}</td>
+                    <td className="py-4 px-6">{formatCurrency(filteredTotals.totalBalance)}</td>
                   </tr>
                 </tfoot>
               )}

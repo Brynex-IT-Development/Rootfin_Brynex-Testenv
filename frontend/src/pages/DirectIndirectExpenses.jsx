@@ -300,6 +300,14 @@ const fallbackLocations = [
   { locName: "WAREHOUSE", locCode: "103" }
 ];
 
+// Vendor payments can only be booked to these three locations
+// (same codes as the Vendor Ledger form)
+const vendorLocations = [
+  { locName: "Warehouse", locCode: "103" },
+  { locName: "Production", locCode: "101" },
+  { locName: "Office", locCode: "102" },
+];
+
 const BANK_ACCOUNTS = [
   { value: "Hdfc SG **0420",       label: "Hdfc SG **0420" },
   { value: "Hdfc ZR **9637",       label: "Hdfc ZR **9637" },
@@ -390,6 +398,9 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
   const isSubscription =
     expenseType === "indirect" && /^it( related| and internet)? expenses$/i.test((category || "").trim());
   const needsLedgerDate = isBuildingRent || isVendor || isSubscription;
+  // Building Rent can be saved without an attachment
+  const attachmentRequired = !isBuildingRent;
+  const branchOptions = isVendor ? vendorLocations : fallbackLocations;
   const [ledgerDate, setLedgerDate] = useState(localToday);
 
   // Fetch custom categories on mount
@@ -671,6 +682,13 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
     };
   }, []);
 
+  // Switching to Vendor: clear a branch that isn't one of the vendor locations
+  useEffect(() => {
+    if (isVendor && canSelectStore && branch && !vendorLocations.some((l) => l.locCode === String(branch))) {
+      setBranch("");
+    }
+  }, [isVendor, canSelectStore, branch]);
+
   // A tenant only applies to Building Rent
   useEffect(() => {
     if (!isBuildingRent) setTenantId("");
@@ -824,7 +842,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
       }
     }
 
-    if (images.length === 0) {
+    if (attachmentRequired && images.length === 0) {
       setStatusMessage({ type: "error", text: "Please upload at least one Attachment." });
       return;
     }
@@ -1132,7 +1150,7 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
               <SearchableSelect
                 value={branch || (canSelectStore ? "" : (currentusers.locCode || "759"))}
                 onChange={handleBranchChange}
-                options={fallbackLocations.map((loc) => ({
+                options={branchOptions.map((loc) => ({
                   value: loc.locCode,
                   label: loc.locName,
                 }))}
@@ -1327,7 +1345,12 @@ const DirectIndirectExpenses = ({ initialType = "direct" }) => {
             {/* Attachment */}
             <div className="flex flex-col">
               <label className="block text-xs font-semibold text-gray-700 tracking-wide mb-2 uppercase">
-                Attachment <span className="text-red-500 font-bold">*</span>
+                Attachment{" "}
+                {attachmentRequired ? (
+                  <span className="text-red-500 font-bold">*</span>
+                ) : (
+                  <span className="text-gray-400 font-normal normal-case">(Optional)</span>
+                )}
               </label>
 
               {/* Upload Drop Area */}

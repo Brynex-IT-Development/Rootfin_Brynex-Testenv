@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import baseUrl from "../api/api.js";
@@ -21,10 +21,13 @@ const SubscriptionLedgers = () => {
   const [ledgers, setLedgers] = useState([]);
   const [totals, setTotals] = useState({ totalDebit: 0, totalCredit: 0, totalBalance: 0 });
   const [loading, setLoading] = useState(false);
+  // Nothing is loaded until the user picks a date range and clicks Fetch Data
+  const [hasFetched, setHasFetched] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchLedgers = async () => {
     setLoading(true);
+    setHasFetched(true);
     setError(null);
     try {
       const res = await fetch(`${baseUrl.baseUrl}api/subscription-ledgers?DateFrom=${dateFrom}&DateTo=${dateTo}`);
@@ -54,10 +57,6 @@ const SubscriptionLedgers = () => {
       setError(err.message || "Failed to delete entry");
     }
   };
-
-  useEffect(() => {
-    fetchLedgers();
-  }, []);
 
   const formatDateDisplay = (dateStr) => {
     if (!dateStr) return "-";
@@ -173,14 +172,19 @@ const SubscriptionLedgers = () => {
                 ) : ledgers.length === 0 ? (
                   <tr>
                     <td colSpan="7" className="py-14 text-center text-gray-400">
-                      No subscription ledger records found for the selected date range.
+                      {hasFetched
+                        ? "No subscription ledger records found for the selected date range."
+                        : "Select a date range and click Fetch Data to view records."}
                     </td>
                   </tr>
                 ) : (
                   ledgers.map((row) => (
                     <tr key={row._id} className="hover:bg-gray-50/80 transition-colors">
                       <td className="py-4 px-6 font-normal text-gray-800 whitespace-nowrap">
-                        {formatDateDisplay(row.fromDate)} – {formatDateDisplay(row.toDate)}
+                        {/* New entries have a single date; older ones may still have a period */}
+                        {formatDateDisplay(row.fromDate) === formatDateDisplay(row.toDate)
+                          ? formatDateDisplay(row.date || row.fromDate)
+                          : `${formatDateDisplay(row.fromDate)} – ${formatDateDisplay(row.toDate)}`}
                       </td>
                       <td className="py-4 px-6 font-medium text-gray-900">{row.subscriptionName}</td>
                       <td className="py-4 px-6 text-gray-700">{row.storeName || "-"}</td>

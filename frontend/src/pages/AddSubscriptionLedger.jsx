@@ -27,8 +27,7 @@ const AddSubscriptionLedger = () => {
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const today = new Date();
 
-  const [fromDate, setFromDate] = useState(formatDateStr(today));
-  const [toDate, setToDate] = useState(formatDateStr(today));
+  const [date, setDate] = useState(formatDateStr(today));
   const [subscriptionId, setSubscriptionId] = useState("");
   const [storeName, setStoreName] = useState("");
   const [debit, setDebit] = useState("");
@@ -137,16 +136,8 @@ const AddSubscriptionLedger = () => {
     if (e) e.preventDefault();
     setStatusMessage(null);
 
-    if (!fromDate) {
-      setStatusMessage({ type: "error", text: "Please select a From Date." });
-      return;
-    }
-    if (!toDate) {
-      setStatusMessage({ type: "error", text: "Please select a To Date." });
-      return;
-    }
-    if (toDate < fromDate) {
-      setStatusMessage({ type: "error", text: "To Date cannot be before From Date." });
+    if (!date) {
+      setStatusMessage({ type: "error", text: "Please select a Date." });
       return;
     }
     const selected = subscriptions.find((s) => s.id === subscriptionId);
@@ -163,9 +154,10 @@ const AddSubscriptionLedger = () => {
     const user = JSON.parse(localStorage.getItem("rootfinuser") || "null");
 
     const payload = {
-      fromDate,
-      toDate,
-      date: fromDate,
+      // The backend still stores a period, so a single date is sent as both ends
+      fromDate: date,
+      toDate: date,
+      date,
       subscriptionName: selected.name,
       storeName,
       locCode: selectedLoc ? selectedLoc.locCode : "",
@@ -259,15 +251,11 @@ const AddSubscriptionLedger = () => {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
 
-            {/* Row 1: Period */}
+            {/* Row 1: Date */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">From Date</label>
-                <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className={inputClass} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">To Date</label>
-                <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className={inputClass} />
+                <label className="block text-xs font-medium text-gray-600 mb-2">Date</label>
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputClass} />
               </div>
             </div>
 

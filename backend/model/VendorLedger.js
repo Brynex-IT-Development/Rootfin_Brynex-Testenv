@@ -8,6 +8,8 @@ const vendorLedgerSchema = new mongoose.Schema(
     storeName: { type: String, default: "", trim: true },
     locCode: { type: String, default: "", trim: true },
     reference: { type: String, default: "", trim: true }, // bill / invoice number
+    // Date the vendor has to be paid by (entries made before it existed have none)
+    dueDate: { type: Date, default: null },
     debit: { type: Number, default: 0 },
     credit: { type: Number, default: 0 },
     balance: { type: Number, default: 0 },
