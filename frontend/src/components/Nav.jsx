@@ -89,6 +89,8 @@ const Nav = () => {
     const isAdminOrSuperAdmin = isAdmin || isSuperAdmin;
     const isClusterManager = (currentuser?.role || "").toLowerCase() === "cluster_manager";
     const isFinancialHead = (currentuser?.role || "").toLowerCase() === "financial_head";
+    // Ledgers are only for Admin, Super Admin and Financial Head (same rule as App.jsx)
+    const canSeeLedgers = isAdminOrSuperAdmin || (currentuser?.role || "").toLowerCase() === "admin" || isFinancialHead;
     const isInAllowedList = salesInventoryAccessConfig.allowedEmails
         .map(email => email.toLowerCase())
         .includes(userEmail);
@@ -618,7 +620,8 @@ const Nav = () => {
                                     </div>
                                 )}
 
-                                {/* Ledgers */}
+                                {/* Ledgers - only Admin / Super Admin (Financial Head has its own menu) */}
+                                {canSeeLedgers && (
                                 <div>
                                     <button onClick={() => setOpenSection(isLedgersOpen ? null : "ledgers")} className={groupButtonClasses(isLedgersOpen, isLedgersActive)}>
                                         <div className="flex w-full items-center gap-3.5">
@@ -635,6 +638,7 @@ const Nav = () => {
                                         </div>
                                     )}
                                 </div>
+                                )}
 
                                 {/* Reports */}
                                 <div>
